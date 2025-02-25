@@ -1,16 +1,15 @@
-//
-//  Backstory
-//
-//  Created by Candace Camarillo on 12/16/2024.  In honor of George Floyd.  May we be better.
-//
+
 
 import SwiftUI
 import os
+import CoreLocation
 
 enum Route {
     case splash
     case privacy
     case safety
+    case notsafe
+    case listen
 }
 
 class Router: ObservableObject {
@@ -25,7 +24,7 @@ struct ContentView: View {
 
     @StateObject private var router = Router()
     
-    let logger = Logger(subsystem: "com.example.yourapp", category: "networking")
+    let logger = Logger(subsystem: "io.pyramidata.backstory", category: "networking")
     
     var body: some View {
         ZStack {
@@ -37,12 +36,13 @@ struct ContentView: View {
                     Privacy().environmentObject(router)
                 case .safety:
                     Safety().environmentObject(router)
+                case .notsafe:
+                    NotSafe().environmentObject(router)
+                case .listen:
+                    Listen().environmentObject(router)
             }
         }
         .padding()
-        .onAppear {
-            
-        }
     }
 }
 
@@ -50,14 +50,14 @@ struct Splash: View {
     
     @EnvironmentObject var router: Router
     
-    let logger = Logger(subsystem: "com.example.yourapp", category: "networking")
+    let logger = Logger(subsystem: "io.pyramidata.backstory", category: "networking")
     var body: some View {
         VStack {
             Spacer()
             Text("Backstory")
                 .font(.largeTitle)
                 .fontWeight(.bold)
-            Text("Copyright 2024 Magnolia Software LLC.  All Rights Reserved.  Welcome to the future of mental health insight.  Tell your story.")
+            Text("Copyright 2025 Magnolia Software LLC.  All Rights Reserved.  Welcome to the future of mental health insight.  Tell your story.")
                 .padding()
             Spacer()
             HStack {
@@ -75,20 +75,82 @@ struct Splash: View {
         .onAppear {
             // Start a timer to automatically dismiss the splash screen after 5 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                // change route
+                if router.currentRoute == .splash {
+                    router.navigate(to: .privacy)
+                }
+                
             }
         }
+    }
+}
+
+struct Listen: View {
+    @StateObject private var router = Router()
+    @State private var isListening = false
+    
+    var body: some View {
+//        ZStack {
+//            Rectangle()
+//                .fill(isListening ? Color.yellow : Color.blue)
+//                .edgesIgnoringSafeArea(.all)
+            Text("")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(width: UIScreen.main.bounds.width)
+                .background(isListening ? Color.red : Color.gray)
+                .foregroundColor(Color.white)
+                .font(.largeTitle)
+                .animation(.easeInOut(duration: 1.0), value: isListening)
+            VStack {
+                Spacer()
+                Text("Ready to Listen")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color.white)
+                    .opacity(isListening ? 0 : 1)
+                    .frame(height: isListening ? 0 : nil)
+                    .clipped()
+                    .animation(.easeInOut(duration: 1.0), value: isListening)
+                Text("It's time to start speaking your truth.")
+                    .foregroundColor(Color.white)
+                    .padding(50)
+                    .opacity(isListening ? 0 : 1)
+                    .frame(height: isListening ? 0 : nil)
+                    .clipped()
+                    .animation(.easeInOut(duration: 1.0), value: isListening)
+                Button(action: {
+                    withAnimation {
+                        startListening()
+                    }
+                    
+                }) {
+                    Text(isListening ? "Listening.  Click to Stop." : "Start")
+                        .font(.title)
+                        .padding()
+                        .background(Color.white)
+                        .foregroundColor(.blue)
+                        .cornerRadius(10)
+                }
+                Spacer()
+            }
+//        }
+        
+        
+    }
+    
+    private func startListening() {
+        isListening.toggle()
     }
 }
 
 struct Privacy: View {
     @EnvironmentObject var router: Router
     
-    let logger = Logger(subsystem: "com.example.yourapp", category: "networking")
+    let logger = Logger(subsystem: "io.pyramidata.backstory", category: "networking")
     
     var body: some View {
         VStack {
             Spacer()
+
             Text("Privacy Policy")
                 .font(.largeTitle)
                 .fontWeight(.bold)
@@ -113,7 +175,88 @@ struct Privacy: View {
     }
 }
 
+struct NotSafe: View {
+    @EnvironmentObject var router: Router
+    @StateObject private var locationManager = LocationManager()
+    
+    let logger = Logger(subsystem: "io.pyramidata.backstory", category: "networking")
+    
+    var body: some View {
+        VStack {
+            Spacer()
+            
+            Text("Please contact a crisis service near you.")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            Spacer()
+            Button(action: {
+                call988()
+            }) {
+                Text("Call National Crisis Hotline (988)")
+                    .font(.title)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            Spacer()
+            Button(action: {
+                call911()
+            }) {
+                Text("Call Local Emergency Services (911)")
+                    .font(.title)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            Spacer()
+            if let location = locationManager.location {
+                Text("Your current location.")
+                Text("Latitude: \(location.coordinate.latitude)")
+                Text("Longitude: \(location.coordinate.longitude)")
+            }
+            Spacer()
+            HStack {
+                Spacer()
+                Button(action: {
+                    router.navigate(to: .safety)
+                }) {
+                    Image(systemName: "xmark")
+                        .foregroundColor(.black)
+                        .padding()
+                }
+            }
+            Spacer()
+        }
+        .padding()
+    }
+    
+    private func call988() {
+        let phoneNumber = "tel://988"
+        if let url = URL(string: phoneNumber) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            } else {
+                print("Cannot make calls on this device")
+            }
+        }
+    }
+    
+    private func call911() {
+        let phoneNumber = "tel://911"
+        if let url = URL(string: phoneNumber) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            } else {
+                print("Cannot make calls on this device")
+            }
+        }
+    }
+}
+
 struct Safety: View {
+    
     
     @EnvironmentObject var router: Router
     
@@ -126,13 +269,14 @@ struct Safety: View {
             Text("Your safety is our top piority.  This application is not intended to help in case you are not safe.  Call emergency services or your local crisis line for help if you are feeling unsafe.")
                 .padding()
             Button(action: {
-                // open the experience
+                router.currentRoute = .listen
             }) {
                 Text("I am safe.  CONTINUE.")
                     .fontWeight(.bold)
+                    .padding(.bottom, 50)
             }
             Button(action: {
-                
+                router.navigate(to: .notsafe)
             }) {
                 Text("I am NOT SAFE.")
                     .fontWeight(.bold)
