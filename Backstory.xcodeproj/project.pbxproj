@@ -29,9 +29,22 @@
 		8F7E27092D11061F008EC201 /* BackstoryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackstoryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8FCC606A2D6691890049A487 /* Exceptions for "Backstory" folder in "Backstory" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 8F7E26ED2D11061C008EC201 /* Backstory */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		8F7E26F02D11061C008EC201 /* Backstory */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8FCC606A2D6691890049A487 /* Exceptions for "Backstory" folder in "Backstory" target */,
+			);
 			path = Backstory;
 			sourceTree = "<group>";
 		};
@@ -392,8 +405,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = George;
 				DEVELOPMENT_ASSET_PATHS = "\"Backstory/Preview Content\"";
+				DEVELOPMENT_TEAM = M499CZH77X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Backstory/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow us to use your location to look up safety services in your area.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -428,8 +444,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = George;
 				DEVELOPMENT_ASSET_PATHS = "\"Backstory/Preview Content\"";
+				DEVELOPMENT_TEAM = M499CZH77X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Backstory/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow us to use your location to look up safety services in your area.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;

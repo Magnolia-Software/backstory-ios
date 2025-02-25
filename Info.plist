@@ -1,0 +1,11 @@
+<key>MinimumOSVersion</key>
+<string>18.1</string>
+
+<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+<string>We need your location to provide better services.</string>
+
+<key>NSLocationAlwaysUsageDescription</key>
+<string>We need your location to provide better services.</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>We need your location to provide better services.</string>
