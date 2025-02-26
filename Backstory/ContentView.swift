@@ -3,6 +3,7 @@
 import SwiftUI
 import os
 import CoreLocation
+import Speech
 
 enum Route {
     case splash
@@ -23,8 +24,10 @@ class Router: ObservableObject {
 struct ContentView: View {
 
     @StateObject private var router = Router()
+    @EnvironmentObject var toastManager: ToastManager
     
     let logger = Logger(subsystem: "io.pyramidata.backstory", category: "networking")
+    
     
     var body: some View {
         ZStack {
@@ -39,7 +42,17 @@ struct ContentView: View {
                 case .notsafe:
                     NotSafe().environmentObject(router)
                 case .listen:
-                    Listen().environmentObject(router)
+                    Listen(router: router).environmentObject(router)
+            }
+            VStack {
+                Spacer()
+                if toastManager.isShowing {
+                    Toast(message: toastManager.message, onClose: {
+                        toastManager.hideToast()
+                    })
+                    .transition(.move(edge: .bottom))
+                    .animation(.easeInOut(duration: 0.5), value: toastManager.isShowing)
+                }
             }
         }
         .padding()
@@ -81,64 +94,6 @@ struct Splash: View {
                 
             }
         }
-    }
-}
-
-struct Listen: View {
-    @StateObject private var router = Router()
-    @State private var isListening = false
-    
-    var body: some View {
-//        ZStack {
-//            Rectangle()
-//                .fill(isListening ? Color.yellow : Color.blue)
-//                .edgesIgnoringSafeArea(.all)
-            Text("")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .frame(width: UIScreen.main.bounds.width)
-                .background(isListening ? Color.red : Color.gray)
-                .foregroundColor(Color.white)
-                .font(.largeTitle)
-                .animation(.easeInOut(duration: 1.0), value: isListening)
-            VStack {
-                Spacer()
-                Text("Ready to Listen")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(Color.white)
-                    .opacity(isListening ? 0 : 1)
-                    .frame(height: isListening ? 0 : nil)
-                    .clipped()
-                    .animation(.easeInOut(duration: 1.0), value: isListening)
-                Text("It's time to start speaking your truth.")
-                    .foregroundColor(Color.white)
-                    .padding(50)
-                    .opacity(isListening ? 0 : 1)
-                    .frame(height: isListening ? 0 : nil)
-                    .clipped()
-                    .animation(.easeInOut(duration: 1.0), value: isListening)
-                Button(action: {
-                    withAnimation {
-                        startListening()
-                    }
-                    
-                }) {
-                    Text(isListening ? "Listening.  Click to Stop." : "Start")
-                        .font(.title)
-                        .padding()
-                        .background(Color.white)
-                        .foregroundColor(.blue)
-                        .cornerRadius(10)
-                }
-                Spacer()
-            }
-//        }
-        
-        
-    }
-    
-    private func startListening() {
-        isListening.toggle()
     }
 }
 
@@ -297,8 +252,11 @@ struct Safety: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
+struct Content: View {
+    @StateObject private var router = Router()
+    
+    var body: some View {
         ContentView()
+        Listen(router: router)
     }
 }
