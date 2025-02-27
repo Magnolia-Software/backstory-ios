@@ -8,13 +8,19 @@
 import SwiftUI
 import Speech
 
+/**
+    The Listen view is responsible for handling the speech recognition functionality.
+    It provides a user interface to start and stop listening, and displays the transcribed text.
+ */
 struct Listen: View {
     @StateObject var router: Router
     @State private var isListening = false
     @EnvironmentObject var toastManager: ToastManager
     @State private var transcription = ""
+    @State private var tokens: [String] = []
     
     var body: some View {
+        
             // WHOLE WINDOW FRAME BG COLOR
             Text("")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -42,26 +48,16 @@ struct Listen: View {
                             .frame(height: isListening ? 0 : nil)
                             .clipped()
                             .animation(.easeInOut(duration: 1.0), value: isListening)
-                        Text(transcription)
-                            .foregroundColor(Color.white)
-                            .padding()
+                        // tokens (phrases between 1 second pauses) as a list
+                        if isListening {
+                            List(tokens, id: \.self) { token in
+                                Text(token)
+                                    .foregroundColor(Color.black)
+                                    .background(Color.white)
+                            }
+                        }
+                        
                         Button(action: {
-//                            print("HELLLLLL")
-//                            if isListening {
-//                                print("is listening")
-//                            }
-//                            withAnimation {
-//                                if isListening {
-//                                    
-//                                    stopListening()
-//                                } else {
-//                                    startListening()
-//                                }
-//                                
-//                            }
-//                            isListening.toggle()
-                            //print("MY OH MY")
-                            
                             if isListening {
                                 stopListening()
                             } else {
@@ -77,14 +73,17 @@ struct Listen: View {
                         }
                         Spacer()
                     }
-                    
-                    
+   
                 }
-                
             }
-        
     }
     
+    /**
+        Requests microphone permission from the user.
+        param completion: A closure that is called with the result of the permission request.
+        - Parameter granted: A Boolean value indicating whether the permission was granted.
+        - Returns: Void
+     */
     private func requestMicrophonePermission(completion: @escaping (Bool) -> Void) {
         AVAudioApplication.requestRecordPermission { granted in
             DispatchQueue.main.async {
@@ -93,6 +92,10 @@ struct Listen: View {
         }
     }
     
+    /**
+        Stops the speech recognition and updates the transcription.
+        - Returns: Void
+    */
     private func stopListening() {
         print("stopping recording")
         SpeechRecognizer.shared.stopRecording()
@@ -105,11 +108,15 @@ struct Listen: View {
 
     }
     
+    /**
+        Starts the speech recognition process.
+        - Returns: Void
+    */
     private func startListening() {
+        
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
             case .authorized:
-                
                 
                 requestMicrophonePermission { granted in
                     if granted {
@@ -123,39 +130,17 @@ struct Listen: View {
                                 self.transcription = newTranscription
                             }
                             
+                            speechRecognizer.tokensUpdateHandler = { tokens in
+                                self.tokens = tokens
+                            }
+                            
                             if speechRecognizer.speechRecognizer?.isAvailable == true {
                                 print("Starting speech recognizer")
                                 //toastManager.showToast(message: "Starting speech recognizer")
                                 speechRecognizer.startRecording()
                             }
                         }
-                        
-                        /*
-                        
-                        isListening.toggle()
-                        let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
-                        print("TEST")
-                        
-                        if let recognizer = speechRecognizer {
-                            print("helllllllliiiiiii")
-                            if recognizer.isAvailable {
-                                print("Starting speech recognizer")
-                                let speechRecognizer = SpeechRecognizer()
-                                speechRecognizer.startRecording()
-                                print("recording!")
-                                
-                                //isListening = true
 
-                            } else {
-                                print("speech reognition not available")
-                                toastManager.showToast(message: "Speech recognition is unavailable.")
-                            }
-                        } else {
-                            print("intiialziae speech recgonizer")
-                            toastManager.showToast(message: "unable to initialize speechRecognizer")
-                        }
-                        
-                        */
                     } else {
                         print("microphone permission denied")
                     }
