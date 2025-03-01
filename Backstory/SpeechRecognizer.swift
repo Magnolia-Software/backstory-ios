@@ -18,6 +18,8 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     public var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    
+    var transcriptionUpdateHandler: ((String) -> Void)? // can be any function that returns a String
     private(set) var transcription: String = "" { // publishes for Listen view to use
         didSet {
             DispatchQueue.main.async {
@@ -25,22 +27,42 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
             }
         }
     }
-    var transcriptionUpdateHandler: ((String) -> Void)? // can be any function that returns a String
-    override init() {
-        super.init()
-        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
-        speechRecognizer?.delegate = self
-    }
     
     var tokensUpdateHandler: (([String]) -> Void)? // can be any function that returns an array of strings
-    
-    // create an object to hold a set of strings - tokens that represent sentences (split between pauses)
     private(set) var tokens: [String] = [] {
         didSet {
             DispatchQueue.main.async {
                 self.tokensUpdateHandler?(self.tokens)
             }
         }
+    }
+    
+    var transcriptionWithPunctuationUpdateHandler: ((String) -> Void)? // can be any function that returns a String
+    private(set) var transcriptionWithPunctuation: String = "" {
+        didSet {
+            DispatchQueue.main.async {
+                self.transcriptionWithPunctuationUpdateHandler?(self.transcriptionWithPunctuation)
+            }
+        }
+    }
+    
+    /**
+        NOT IN USE: An array of paragraphs.  
+     */
+    var paragraphTokensUpdateHandler: (([String]) -> Void)? // can be any function that returns a String
+    private(set) var paragraphTokens: [String] = [] {
+        didSet {
+            DispatchQueue.main.async {
+                self.paragraphTokensUpdateHandler?(self.paragraphTokens)
+            }
+        }
+                
+    }
+    
+    override init() {
+        super.init()
+        speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
+        speechRecognizer?.delegate = self
     }
     
     /**
@@ -151,33 +173,95 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         return false
     }
     
+    
+    private func addLastToken(from words: [String], processedTranscription: String) -> [String] {
+        
+        var tokens = self.tokens
+        
+        if var lastToken = tokens.last {
+            if let lastWord = words.last {
+                lastToken += " " + lastWord
+                
+                // get the last word from the last token
+                if let lastWordFromLastToken = tokens.last?.split(separator: " ").last {
+                    print("last word from last token: \(lastWordFromLastToken)")
+                    // compare the last word from the last token to the last word in the transcription  \
+                    if lastWordFromLastToken == lastWord {
+                        print("last word from last token: \(lastWordFromLastToken) is the same as the last word in the transcription")
+                    } else {
+                        
+                        
+                        if let lastToken = tokens.last, let lastWord = words.last {
+                            if lastToken.split(separator: " ").last != lastWord {
+                                print("last word from last token is not the same as the last word in the transcription")
+                                var string = lastToken + " " + lastWord
+                                tokens[tokens.count - 1] = string
+                            }
+                        } else {
+                            print("appending")
+                            print(processedTranscription)
+                            tokens.append(processedTranscription)
+                        }
+                    }
+                } else {
+                    // add the last word to the last token
+                    print("adding last word to last token")
+                    if let lastWord = words.last {
+                        lastToken += " " + lastWord
+                        tokens[tokens.count - 1] = lastToken
+                    }
+                }
+                
+            }
+        } else {
+            print("adding new token")
+            if var lastToken = tokens.last {
+                if let lastWord = words.last {
+                    lastToken += " " + lastWord
+                    print("adding last word \(lastWord) to last token: \(lastToken)")
+                    tokens[tokens.count - 1] = lastToken
+                }
+            } else {
+                print("adding new token")
+                tokens.append(String(words.last ?? ""))
+            }
+        }
+        
+        return tokens
+    }
+    
     /**
-        Adds line braks to the string based on
+     Populates the tokens array with the processed transcription.
      */
-//    private func withLineBreaks(in text: String) -> String {
-//        let words = text.split(separator: " ")
-//        
-//        // Check if there are at least two words
-//        guard words.count >= 2 else {
-//            return text
-//        }
-//        
-//        // Get the second-to-last word index
-//        let secondToLastWordIndex = words.count - 2
-//        
-//        // Reconstruct the string with a line break after the second-to-last word
-//        var result = ""
-//        for (index, word) in words.enumerated() {
-//            result += word
-//            if index == secondToLastWordIndex {
-//                result += "\n"
-//            } else {
-//                result += " "
-//            }
-//        }
-//        
-//        return result.trimmingCharacters(in: .whitespaces)
-//    }
+    private func populateTokens(from processedTranscription: String) -> [String] {
+        
+        var tempTokens = self.tokens
+        var processedTranscription = processedTranscription
+        
+        print("adding line break!")
+        
+        //self.tokens.append(wordsAfterLastLineBreak)
+        processedTranscription = self.addLineBreakAfterSecondToLastWord(in: processedTranscription)
+        
+        print("processedTranscription with line break: \(processedTranscription)")
+    
+        
+        // get the words after the last line break
+        let wordsAfterLastLineBreak = processedTranscription.split(separator: "\n").last ?? ""
+        
+        let wordsBeforeLastLineBreak = processedTranscription.split(separator: "\n").dropLast().joined(separator: "\n")
+    
+        print("wordsAfterLastLineBreak: \(wordsAfterLastLineBreak)")
+
+        if var lastToken = self.tokens.last {
+            tempTokens.append(String(wordsAfterLastLineBreak))
+        } else {
+            tempTokens.append(String(wordsBeforeLastLineBreak))
+        }
+        
+        return tempTokens
+        
+    }
     
     
     /*
@@ -211,137 +295,73 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
             processedTranscription += sentence.trimmingCharacters(in: .whitespaces)
         }
         
-        // add a sentence to the tokens array
-        //self.tokens.append(processedTranscription)
-        
-        //print("TOKENS: \(self.tokens)")
-        
-        //processedTranscription = self.withLineBreaks(in: processedTranscription)
-        
         if self.shouldLineBreak(from: transcription) {
-            print("adding line break!")
             
-            //self.tokens.append(wordsAfterLastLineBreak)
-            processedTranscription = self.addLineBreakAfterSecondToLastWord(in: processedTranscription)
+            self.tokens = self.populateTokens(from: processedTranscription)
             
-            print("processedTranscription with line break: \(processedTranscription)")
-        
+            let processor = TokenProcessor()
             
-            // get the words after the last line break
-            let wordsAfterLastLineBreak = processedTranscription.split(separator: "\n").last ?? ""
-            
-            let wordsBeforeLastLineBreak = processedTranscription.split(separator: "\n").dropLast().joined(separator: "\n")
-        
-//            // check if the sentence is already there and only add the last word to the same string in the array
-            print("wordsAfterLastLineBreak: \(wordsAfterLastLineBreak)")
-//
-            //self.tokens.append(String(wordsAfterLastLineBreak))
-            if var lastToken = self.tokens.last {
-                print("WOW!")
-                //lastToken += " " + wordsAfterLastLineBreak
-                self.tokens.append(String(wordsAfterLastLineBreak))
-            } else {
-                self.tokens.append(String(wordsBeforeLastLineBreak))
+            for token in self.tokens {
+                let punctuatedText = processor.addPunctuation(to: token)
+                print("PUNCTUATED TEXT-----------")
+                print(punctuatedText) // Output: "this is a test. how are you doing. let's add some punctuation."
+                self.transcriptionWithPunctuation += " " + punctuatedText
             }
-            
-            
-            // get the string that is the last token
-//            if let lastToken = self.tokens.last {
-//                if lastToken.hasPrefix(wordsBeforeLastLineBreak) {
-//                    print("last token already contains the words")
-//                    // concatenate the wordsAfterLastLineBreak to the value of the last token
-//                    self.tokens[self.tokens.count - 1] = lastToken + " " + String(wordsAfterLastLineBreak)
-//                    print("new last token: \(self.tokens[self.tokens.count - 1])")
-//                    
-//                } else {
-//                    // start a new token at the end of the last token (string concatenation)
-//                    print("adding new token")
-//                    self.tokens.append(String(wordsAfterLastLineBreak))
-//                    
-//                }
-//            }
-            
-            
-//            print("last token")
-//            //var lastToken = self.tokens.last
-//            // look at the lastToken and see if it includes the second to last word at the end of it
-//            if String(self.tokens.last).hasSuffix(wordsAfterLastLineBreak) {
-//                print("last token already contains the words")
-//                // add word to the end of the last token
-//                self.tokens.last = self.token.last + " " + String(wordsAfterLastLineBreak)
-//            } else {
-//                print("adding new token")
-//                // add words to a new token
-//                self.tokens.append(String(wordsAfterLastLineBreak))
-//            }
-//            
-            // detect if last word is already contained in the tokens array - compare against the last string and see if word or words are at the end of that string
-//            if let lastToken = self.tokens.last, lastToken.hasSuffix(String(wordsAfterLastLineBreak)) {
-//                print("last token already contains the words")
-//                print(lastToken)
-//            } else {
-//                print("adding new token")
-//                // add words to a new token
-//                self.tokens.append(String(wordsAfterLastLineBreak))
-//            }
-                
-            
-            
-            
             
         } else {
             
+            self.tokens = self.addLastToken(from: words.map { String($0) }, processedTranscription: processedTranscription)
+            
             // get the last item in tokens
-            if var lastToken = self.tokens.last {
-                if let lastWord = words.last {
-                    lastToken += " " + lastWord
-                    
-                    // get the last word from the last token
-                    if let lastWordFromLastToken = self.tokens.last?.split(separator: " ").last {
-                        print("last word from last token: \(lastWordFromLastToken)")
-                        // compare the last word from the last token to the last word in the transcription  \
-                        if lastWordFromLastToken == lastWord {
-                            print("last word from last token: \(lastWordFromLastToken) is the same as the last word in the transcription")
-                            //self.tokens[self.tokens.count - 1] = lastToken
-                        } else {
-  
-                            
-                            if let lastToken = self.tokens.last, let lastWord = words.last {
-                                if lastToken.split(separator: " ").last != lastWord {
-                                    print("last word from last token is not the same as the last word in the transcription")
-                                    var string = lastToken + " " + lastWord
-                                    self.tokens[self.tokens.count - 1] = string
-                                }
-                            } else {
-                                print("appending")
-                                print(processedTranscription)
-                                self.tokens.append(processedTranscription)
-                            }
-                        }
-                    } else {
-                        // add the last word to the last token
-                        print("adding last word to last token")
-                        if let lastWord = words.last {
-                            lastToken += " " + lastWord
-                            self.tokens[self.tokens.count - 1] = lastToken
-                        }
-                        //self.tokens[self.tokens.count - 1] = words.last
-                    }
-                    
-                }
-            } else {
-                print("adding new token")
-                if var lastToken = self.tokens.last {
-                    if let lastWord = words.last {
-                        lastToken += " " + lastWord
-                        print("adding last word \(lastWord) to last token: \(lastToken)")
-                        self.tokens[self.tokens.count - 1] = lastToken
-                    }
-                } else {
-                    print("adding new token")
-                    self.tokens.append(String(words.last ?? ""))
-                }
-            }
+//            if var lastToken = self.tokens.last {
+//                if let lastWord = words.last {
+//                    lastToken += " " + lastWord
+//                    
+//                    // get the last word from the last token
+//                    if let lastWordFromLastToken = self.tokens.last?.split(separator: " ").last {
+//                        print("last word from last token: \(lastWordFromLastToken)")
+//                        // compare the last word from the last token to the last word in the transcription  \
+//                        if lastWordFromLastToken == lastWord {
+//                            print("last word from last token: \(lastWordFromLastToken) is the same as the last word in the transcription")
+//                            //self.tokens[self.tokens.count - 1] = lastToken
+//                        } else {
+//  
+//                            
+//                            if let lastToken = self.tokens.last, let lastWord = words.last {
+//                                if lastToken.split(separator: " ").last != lastWord {
+//                                    print("last word from last token is not the same as the last word in the transcription")
+//                                    var string = lastToken + " " + lastWord
+//                                    self.tokens[self.tokens.count - 1] = string
+//                                }
+//                            } else {
+//                                print("appending")
+//                                print(processedTranscription)
+//                                self.tokens.append(processedTranscription)
+//                            }
+//                        }
+//                    } else {
+//                        // add the last word to the last token
+//                        print("adding last word to last token")
+//                        if let lastWord = words.last {
+//                            lastToken += " " + lastWord
+//                            self.tokens[self.tokens.count - 1] = lastToken
+//                        }
+//                    }
+//                    
+//                }
+//            } else {
+//                print("adding new token")
+//                if var lastToken = self.tokens.last {
+//                    if let lastWord = words.last {
+//                        lastToken += " " + lastWord
+//                        print("adding last word \(lastWord) to last token: \(lastToken)")
+//                        self.tokens[self.tokens.count - 1] = lastToken
+//                    }
+//                } else {
+//                    print("adding new token")
+//                    self.tokens.append(String(words.last ?? ""))
+//                }
+//            }
             
             
         }

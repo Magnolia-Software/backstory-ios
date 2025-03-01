@@ -18,6 +18,8 @@ struct Listen: View {
     @EnvironmentObject var toastManager: ToastManager
     @State private var transcription = ""
     @State private var tokens: [String] = []
+    @State private var transcriptionWithPunctuation = ""
+    @State private var paragraphTokens: [String] = [] // UNUSED: an array of paragraphs
     
     var body: some View {
         
@@ -56,7 +58,15 @@ struct Listen: View {
                                     .background(Color.white)
                             }
                         }
-                        
+//
+                        Text(transcriptionWithPunctuation)
+                        if isListening {
+                            List(paragraphTokens, id: \.self) { token in
+                                Text(token)
+                                    .foregroundColor(Color.black)
+                                    .background(Color.white)
+                            }
+                        }
                         Button(action: {
                             if isListening {
                                 stopListening()
@@ -134,9 +144,16 @@ struct Listen: View {
                                 self.tokens = tokens
                             }
                             
+                            speechRecognizer.transcriptionWithPunctuationUpdateHandler = { transcriptionWithPunctuation in
+                                self.transcriptionWithPunctuation = transcriptionWithPunctuation
+                            }
+                            
+                            speechRecognizer.paragraphTokensUpdateHandler = { paragraphTokens in
+                                self.paragraphTokens = paragraphTokens
+                            }
+                            
                             if speechRecognizer.speechRecognizer?.isAvailable == true {
                                 print("Starting speech recognizer")
-                                //toastManager.showToast(message: "Starting speech recognizer")
                                 speechRecognizer.startRecording()
                             }
                         }
