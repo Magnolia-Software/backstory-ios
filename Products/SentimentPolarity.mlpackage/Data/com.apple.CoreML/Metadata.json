@@ -1,0 +1,6 @@
+{
+  "MLModelVersionStringKey" : "--",
+  "MLModelDescriptionKey" : "Sentiment polarity LinearSVC.",
+  "MLModelAuthorKey" : "Vadym Markov",
+  "MLModelLicenseKey" : "MIT"
+}

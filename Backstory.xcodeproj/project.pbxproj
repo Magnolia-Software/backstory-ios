@@ -58,6 +58,11 @@
 			path = BackstoryUITests;
 			sourceTree = "<group>";
 		};
+		8FCEE33B2D7383090074CCA6 /* Products */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +93,7 @@
 		8F7E26E52D11061C008EC201 = {
 			isa = PBXGroup;
 			children = (
+				8FCEE33B2D7383090074CCA6 /* Products */,
 				8F7E26F02D11061C008EC201 /* Backstory */,
 				8F7E27022D11061F008EC201 /* BackstoryTests */,
 				8F7E270C2D11061F008EC201 /* BackstoryUITests */,
@@ -122,6 +128,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				8F7E26F02D11061C008EC201 /* Backstory */,
+				8FCEE33B2D7383090074CCA6 /* Products */,
 			);
 			name = Backstory;
 			packageProductDependencies = (
