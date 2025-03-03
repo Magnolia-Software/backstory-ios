@@ -1,0 +1,21 @@
+{
+  "Inputs" : {
+    "input" : {
+      "MLFeatureShortDescription" : "Features extracted from the text."
+    }
+  },
+  "Outputs" : {
+    "classProbability" : {
+      "MLFeatureShortDescription" : "The probabilities for each class label, for the given input."
+    },
+    "classLabel" : {
+      "MLFeatureShortDescription" : "The most likely polarity (positive or negative), for the given input."
+    }
+  },
+  "TrainingInputs" : {
+
+  },
+  "States" : {
+
+  }
+}
