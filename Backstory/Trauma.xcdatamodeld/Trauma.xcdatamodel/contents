@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="23H124" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="Flashback" representedClassName=".Flashback" syncable="YES">
+        <attribute name="cause" optional="YES" attributeType="String"/>
+        <attribute name="date_unix" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="discussed_in_group" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="discussed_in_therapy" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="discussed_with_friend" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="spike_duration_seconds" optional="YES" attributeType="Integer 16" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="total_duration_seconds" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="triggers" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Flashback"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="name"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+    <entity name="Trigger" representedClassName=".Trigger" syncable="YES">
+        <attribute name="date_unix" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <relationship name="flashbacks" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Flashback"/>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="name"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+    </entity>
+</model>
