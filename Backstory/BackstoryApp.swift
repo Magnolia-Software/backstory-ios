@@ -10,12 +10,14 @@ import SwiftUI
 @main
 struct Backstory: App {
     @StateObject private var toastManager = ToastManager()
+    @StateObject private var coreDataStack = CoreDataStack.shared
     
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .edgesIgnoringSafeArea(.all)
                 .environmentObject(toastManager)
+                .environment(\.managedObjectContext, coreDataStack.persistentContainer.viewContext)
         }
     }
 }

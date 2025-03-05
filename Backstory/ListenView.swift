@@ -7,12 +7,15 @@
 
 import SwiftUI
 import Speech
+import CoreData
 
 /**
     The Listen view is responsible for handling the speech recognition functionality.
     It provides a user interface to start and stop listening, and displays the transcribed text.
  */
 struct Listen: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    
     @StateObject var router: Router
     @State private var isListening = false
     @EnvironmentObject var toastManager: ToastManager
@@ -20,6 +23,8 @@ struct Listen: View {
     @State private var tokens: [String] = []
     @State private var transcriptionWithPunctuation = ""
     @State private var paragraphTokens: [String] = [] // UNUSED: an array of paragraphs
+    @State private var sentiment = ""
+    @State private var sentiments: [String] = []
     
     var body: some View {
         
@@ -43,6 +48,10 @@ struct Listen: View {
                             .frame(height: isListening ? 0 : nil)
                             .clipped()
                             .animation(.easeInOut(duration: 1.0), value: isListening)
+                        Text(sentiment)
+                            .foregroundColor(Color.blue)
+                            .background(Color.white)
+                            .padding(50)
                         Text("It's time to start speaking your truth.")
                             .foregroundColor(Color.white)
                             .padding(50)
@@ -52,6 +61,11 @@ struct Listen: View {
                             .animation(.easeInOut(duration: 1.0), value: isListening)
                         // tokens (phrases between 1 second pauses) as a list
                         if isListening {
+                            List(sentiments, id: \.self) { sentiment in
+                                Text(sentiment)
+                                    .foregroundColor(Color.black)
+                                    .background(Color.yellow)
+                            }
                             List(tokens, id: \.self) { token in
                                 Text(token)
                                     .foregroundColor(Color.black)
@@ -124,6 +138,59 @@ struct Listen: View {
     */
     private func startListening() {
         
+        // Create a new Flashback
+        FlashbackManager.shared.createFlashback(
+            name: "flashback 1"
+        )
+        
+        // Fetch all flashbacks
+        let flashbacks = FlashbackManager.shared.fetchFlashbacks()
+        for flashback in flashbacks {
+            print("""
+                Flashback Name: \(flashback.name ?? "No Name")
+                """)
+        }
+
+        // Create a new trigger
+//        TriggerManager.shared.createTrigger(name: "Loud Noise 23", notes: "Triggered 2 by loud noises like fireworks.")
+//        
+//        // Fetch all triggers
+//        let triggers = TriggerManager.shared.fetchTriggers()
+//        for trigger in triggers {
+//            print("""
+//                Trigger Name: \(trigger.name ?? "No Name")
+//                Notes: \(trigger.notes ?? "No Notes")
+//                Date: \(trigger.date_unix)
+//                """)
+//        }
+        
+//        // Assuming you want to delete the first trigger
+//        if let firstTrigger = triggers.first {
+//            TriggerManager.shared.deleteTrigger(firstTrigger)
+//        }
+//        
+//        // Fetch all triggers again to see the updated list
+//        let updatedTriggers = TriggerManager.shared.fetchTriggers()
+//        for trigger in updatedTriggers {
+//            print("""
+//                Updated Trigger Name: \(trigger.name ?? "No Name")
+//                Updated Notes: \(trigger.notes ?? "No Notes")
+//                Updated Date: \(trigger.date_unix)
+//                """)
+//        }
+//        
+       
+            // THIS WORKS!
+//        let openAIAPIKey: String? = {
+//                return ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
+//        }()
+//        
+//        if let apiKey = openAIAPIKey {
+//            print("API Key: \(apiKey)")
+//        } else {
+//            print("API Key not found")
+//        }
+        
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
             case .authorized:
@@ -150,6 +217,14 @@ struct Listen: View {
                             
                             speechRecognizer.paragraphTokensUpdateHandler = { paragraphTokens in
                                 self.paragraphTokens = paragraphTokens
+                            }
+                            
+                            speechRecognizer.sentimentUpdateHandler = { sentiment in
+                                self.sentiment = sentiment
+                            }
+                            
+                            speechRecognizer.sentimentsUpdateHandler = { sentiments in
+                                self.sentiments = sentiments
                             }
                             
                             if speechRecognizer.speechRecognizer?.isAvailable == true {

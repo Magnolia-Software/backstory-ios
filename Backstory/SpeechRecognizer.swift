@@ -18,6 +18,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
     public var speechRecognizer: SFSpeechRecognizer?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private let classificationService = ClassificationService()
     
     var transcriptionUpdateHandler: ((String) -> Void)? // can be any function that returns a String
     private(set) var transcription: String = "" { // publishes for Listen view to use
@@ -42,6 +43,24 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         didSet {
             DispatchQueue.main.async {
                 self.transcriptionWithPunctuationUpdateHandler?(self.transcriptionWithPunctuation)
+            }
+        }
+    }
+    
+    var sentimentUpdateHandler: ((String) -> Void)?
+    private(set) var sentiment: String = "" {
+        didSet {
+            DispatchQueue.main.async {
+                self.sentimentUpdateHandler?(self.sentiment)
+            }
+        }
+    }
+    
+    var sentimentsUpdateHandler: (([String]) -> Void)?
+    private(set) var sentiments: [String] = [] {
+        didSet {
+            DispatchQueue.main.async {
+                self.sentimentsUpdateHandler?(self.sentiments)
             }
         }
     }
@@ -271,27 +290,48 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
             
             let processor = TokenProcessor()
             
+            print("TOKENS!!")
             for token in self.tokens {
+                print("token: \(token)")
+            }
+            
+            for token in self.tokens {
+                
                 let punctuatedText = processor.addPunctuation(to: token)
                 self.transcriptionWithPunctuation += " " + punctuatedText
             }
             
-            if let sentimentAnalysis = SentimentAnalysis() {
-                if let lastToken = self.tokens.last, lastToken == self.tokens[self.tokens.count - 1] {
-                    let sentiment = sentimentAnalysis.analyzeSentiment(for: processedTranscription)
-                    print("Sentiment: \(sentiment)")
-                } else {
-                    print("This is a repeat")
-                }
-            } else {
+            //if let sentimentAnalysis = SentimentAnalysis() {
+                //if let lastToken = self.tokens[self.tokens.count - 1] ?? {
+                let lastCompleteToken = self.tokens[self.tokens.count - 2]
+                //if lastToken {
+                    //let sentiment = sentimentAnalysis.analyzeSentiment(for: punctuatedText)
+                    //let sentiment = sentimentAnalysis.analyzeSentiment(for: lastToken)
+                    let sentiment = classificationService.predictSentiment(from: lastCompleteToken)
+                    //self.sentiment = sentiment
+                    print("sentiment!!!")
+                    //self.sentiment = \(sentiment)
+                    // convert sentiment to string
+                    self.sentiment = "\(sentiment)"
+                    self.sentiments.append("\(sentiment)")
+            
+            
+                    //print("lastToken: \(lastToken)")
+                    print("sentiment for \(lastCompleteToken)")
+                //} else {
+                //    print("This is a repeat")
+                //}
+            //} else {
                 print("Could not create sentiment analysis object")
-            }
+            //}
+            
+            
             
         } else {
             self.tokens = self.addLastToken(from: words.map { String($0) }, processedTranscription: processedTranscription)
         }
         
-        let lastToken = self.tokens.last ?? ""
+        //let lastToken = self.tokens.last ?? ""
         
         return processedTranscription
     }
