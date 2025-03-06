@@ -25,6 +25,9 @@ struct Listen: View {
     @State private var paragraphTokens: [String] = [] // UNUSED: an array of paragraphs
     @State private var sentiment = ""
     @State private var sentiments: [String] = []
+    @State private var prompt: String = ""
+    @State private var response: String = ""
+    @State private var isLoadingAIResponse: Bool = false
     
     var body: some View {
         
@@ -80,6 +83,9 @@ struct Listen: View {
                                     .foregroundColor(Color.black)
                                     .background(Color.white)
                             }
+                            Text("OPENAPI response: \(response)")
+                                .foregroundColor(Color.black)
+                                .background(Color.white)
                         }
                         Button(action: {
                             if isListening {
@@ -100,6 +106,7 @@ struct Listen: View {
    
                 }
             }
+            .onChange(of: transcriptionWithPunctuation) { oldValue, newValue in processTranscription(newValue)}
     }
     
     /**
@@ -112,6 +119,50 @@ struct Listen: View {
         AVAudioApplication.requestRecordPermission { granted in
             DispatchQueue.main.async {
                 completion(granted)
+            }
+        }
+    }
+    
+    /**
+        Processes the transcription to extract paragraphs with 5 sentences and makes API requests.
+        - Parameter transcription: The transcribed text with punctuation.
+        - Returns: Void
+    */
+    private func processTranscription(_ transcription: String) {
+        let sentences = transcription.split(separator: ".")
+        var paragraph = ""
+
+        for (index, sentence) in sentences.enumerated() {
+            paragraph += sentence + ". "
+            if (index + 1) % 5 == 0 {
+                makeAPIRequest(with: paragraph)
+                paragraph = ""
+            }
+        }
+
+        // Handle any remaining sentences that didn't form a full paragraph
+        if !paragraph.isEmpty {
+            makeAPIRequest(with: paragraph)
+        }
+    }
+
+    /**
+        Makes an API request to OpenAI with the given prompt.
+        - Parameter prompt: The prompt to be sent to the OpenAI API.
+        - Returns: Void
+    */
+    private func makeAPIRequest(with prompt: String) {
+        self.isLoadingAIResponse = true
+        OpenAI.shared.makeRequest(prompt: prompt) { response in
+            DispatchQueue.main.async {
+                self.isLoadingAIResponse = false
+                guard let response = response else {
+                    print("Failed to get response from OpenAI API")
+                    return
+                }
+                self.response = response
+                // Update the UI with the response or perform any other actions needed
+                print("Response from OpenAI API: \(response)")
             }
         }
     }
@@ -189,6 +240,20 @@ struct Listen: View {
 //            print("API Key: \(apiKey)")
 //        } else {
 //            print("API Key not found")
+//        }
+        
+        // Example usage of OpenAIRequest
+//        OpenAI.shared.makeRequest(prompt: "This is something") { result in
+//            isLoadingAIResponse = true
+//            DispatchQueue.main.async {
+//                if let result = result {
+//                    response = result
+//                    print("response")
+//                } else {
+//                    response = "Failed to get a response."
+//                }
+//                isLoadingAIResponse = false
+//            }
 //        }
         
         SFSpeechRecognizer.requestAuthorization { authStatus in
