@@ -76,7 +76,6 @@ struct Listen: View {
                                     .background(Color.white)
                             }
                         }
-//
                         Text(transcriptionWithPunctuation)
                         if isListening {
                             List(paragraphTokens, id: \.self) { token in
@@ -125,35 +124,10 @@ struct Listen: View {
     }
     
     /**
-        Processes the transcription to extract paragraphs with 5 sentences and makes API requests.
-        - Parameter transcription: The transcribed text with punctuation.
-        - Returns: Void
-    */
-    
-//     private func processTranscription(_ transcription: String) {
-//        let sentences = transcription.split(separator: ".")
-//        var paragraph = ""
-//
-//        for (index, sentence) in sentences.enumerated() {
-//            paragraph += sentence + ". "
-//            if (index + 1) % 5 == 0 {
-//                makeAPIRequest(with: paragraph)
-//                paragraph = ""
-//            }
-//        }
-//
-//        // Handle any remaining sentences that didn't form a full paragraph
-//        if !paragraph.isEmpty {
-//            makeAPIRequest(with: paragraph)
-//        }
-//    }
-    
-    /**
-            Sends the last 5 statements unprocessed to the API for processing
-            - Parameter transcription: The transcribed text with punctuation.
+    Sends the last 5 statements unprocessed to the API for processing
+    - Parameter transcription: The transcribed text with punctuation.
      */
     private func processTranscription(_ transcription: String) {
-       
         
         var doFetch = false
         
@@ -215,9 +189,7 @@ struct Listen: View {
         - Returns: Void
     */
     private func stopListening() {
-        print("stopping recording")
         SpeechRecognizer.shared.stopRecording()
-        print("got here")
         isListening = false
         
         DispatchQueue.main.async {
@@ -245,35 +217,6 @@ struct Listen: View {
                 """)
         }
 
-        // Create a new trigger
-//        TriggerManager.shared.createTrigger(name: "Loud Noise 23", notes: "Triggered 2 by loud noises like fireworks.")
-//        
-//        // Fetch all triggers
-//        let triggers = TriggerManager.shared.fetchTriggers()
-//        for trigger in triggers {
-//            print("""
-//                Trigger Name: \(trigger.name ?? "No Name")
-//                Notes: \(trigger.notes ?? "No Notes")
-//                Date: \(trigger.date_unix)
-//                """)
-//        }
-        
-//        // Assuming you want to delete the first trigger
-//        if let firstTrigger = triggers.first {
-//            TriggerManager.shared.deleteTrigger(firstTrigger)
-//        }
-//        
-//        // Fetch all triggers again to see the updated list
-//        let updatedTriggers = TriggerManager.shared.fetchTriggers()
-//        for trigger in updatedTriggers {
-//            print("""
-//                Updated Trigger Name: \(trigger.name ?? "No Name")
-//                Updated Notes: \(trigger.notes ?? "No Notes")
-//                Updated Date: \(trigger.date_unix)
-//                """)
-//        }
-//        
-    
         
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
