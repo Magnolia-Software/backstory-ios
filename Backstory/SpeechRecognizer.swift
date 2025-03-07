@@ -288,6 +288,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
             
             self.tokens = self.populateTokens(from: processedTranscription)
             
+            
             let processor = TokenProcessor()
             
             print("TOKENS!!")
@@ -315,9 +316,16 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
                     self.sentiment = "\(sentiment)"
                     self.sentiments.append("\(sentiment)")
             
-            
                     //print("lastToken: \(lastToken)")
                     print("sentiment for \(lastCompleteToken)")
+            
+                    StatementManager.shared.createStatement(
+                        text: lastCompleteToken,
+                        is_processed: false,
+                        date_unix: Int32(Date().timeIntervalSince1970)
+                    )
+            
+            
                 //} else {
                 //    print("This is a repeat")
                 //}

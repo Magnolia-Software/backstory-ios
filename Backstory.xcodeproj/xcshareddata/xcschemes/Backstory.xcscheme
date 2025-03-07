@@ -77,7 +77,12 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "OPENAI_API_KEY"
-            value = "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"
+            value = "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"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "OPENAI_API_URL"
+            value = "https://api.openai.com/v1/chat/completions"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

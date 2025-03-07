@@ -17,6 +17,11 @@
             </uniquenessConstraint>
         </uniquenessConstraints>
     </entity>
+    <entity name="Statement" representedClassName=".Statement" syncable="YES">
+        <attribute name="date_unix" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="is_processed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="text" attributeType="String"/>
+    </entity>
     <entity name="Trigger" representedClassName=".Trigger" syncable="YES">
         <attribute name="date_unix" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>

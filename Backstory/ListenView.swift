@@ -28,6 +28,7 @@ struct Listen: View {
     @State private var prompt: String = ""
     @State private var response: String = ""
     @State private var isLoadingAIResponse: Bool = false
+    @State private var changeCounter: Int = 0
     
     var body: some View {
         
@@ -75,7 +76,6 @@ struct Listen: View {
                                     .background(Color.white)
                             }
                         }
-//
                         Text(transcriptionWithPunctuation)
                         if isListening {
                             List(paragraphTokens, id: \.self) { token in
@@ -124,45 +124,62 @@ struct Listen: View {
     }
     
     /**
-        Processes the transcription to extract paragraphs with 5 sentences and makes API requests.
-        - Parameter transcription: The transcribed text with punctuation.
-        - Returns: Void
-    */
+    Sends the last 5 statements unprocessed to the API for processing
+    - Parameter transcription: The transcribed text with punctuation.
+     */
     private func processTranscription(_ transcription: String) {
-        let sentences = transcription.split(separator: ".")
-        var paragraph = ""
-
-        for (index, sentence) in sentences.enumerated() {
-            paragraph += sentence + ". "
-            if (index + 1) % 5 == 0 {
-                makeAPIRequest(with: paragraph)
-                paragraph = ""
+        
+        var doFetch = false
+        
+        if self.changeCounter == 0 || self.changeCounter % 5 == 0 {
+            doFetch = true
+        }
+        
+        
+        if doFetch {
+            // get any unread tokens from the database
+            let statements = StatementManager.shared.fetchUnprocessedStatements()
+            for statement in statements {
+                print("""
+                    UNPROCESSED Statement: \(statement.text ?? "empty")
+                    """)
+            }
+            // Create a JSON object with the statements
+            let json = [
+                "statements": statements.map { statement in
+                    return
+                        statement.text ?? ""
+                    
+                }
+            ]
+            // if there is one or more statements
+            if statements.count > 0 {
+                // make an API request to the OpenAI API
+                makeAPIRequest(with: json)
             }
         }
-
-        // Handle any remaining sentences that didn't form a full paragraph
-        if !paragraph.isEmpty {
-            makeAPIRequest(with: paragraph)
-        }
+        
+        // if the counter is divisible by five, then do not process the transcription
+        self.changeCounter += 1
     }
 
     /**
         Makes an API request to OpenAI with the given prompt.
-        - Parameter prompt: The prompt to be sent to the OpenAI API.
+        - Parameter prompt: A list of prompts to be sent to the OpenAI API.
         - Returns: Void
     */
-    private func makeAPIRequest(with prompt: String) {
+    private func makeAPIRequest(with prompt: [String : [String]]) {
         self.isLoadingAIResponse = true
         OpenAI.shared.makeRequest(prompt: prompt) { response in
             DispatchQueue.main.async {
                 self.isLoadingAIResponse = false
                 guard let response = response else {
-                    print("Failed to get response from OpenAI API")
+                    //print("Failed to get response from OpenAI API")
                     return
                 }
                 self.response = response
                 // Update the UI with the response or perform any other actions needed
-                print("Response from OpenAI API: \(response)")
+                print("SUCCESS FROM API")
             }
         }
     }
@@ -172,9 +189,7 @@ struct Listen: View {
         - Returns: Void
     */
     private func stopListening() {
-        print("stopping recording")
         SpeechRecognizer.shared.stopRecording()
-        print("got here")
         isListening = false
         
         DispatchQueue.main.async {
@@ -202,59 +217,6 @@ struct Listen: View {
                 """)
         }
 
-        // Create a new trigger
-//        TriggerManager.shared.createTrigger(name: "Loud Noise 23", notes: "Triggered 2 by loud noises like fireworks.")
-//        
-//        // Fetch all triggers
-//        let triggers = TriggerManager.shared.fetchTriggers()
-//        for trigger in triggers {
-//            print("""
-//                Trigger Name: \(trigger.name ?? "No Name")
-//                Notes: \(trigger.notes ?? "No Notes")
-//                Date: \(trigger.date_unix)
-//                """)
-//        }
-        
-//        // Assuming you want to delete the first trigger
-//        if let firstTrigger = triggers.first {
-//            TriggerManager.shared.deleteTrigger(firstTrigger)
-//        }
-//        
-//        // Fetch all triggers again to see the updated list
-//        let updatedTriggers = TriggerManager.shared.fetchTriggers()
-//        for trigger in updatedTriggers {
-//            print("""
-//                Updated Trigger Name: \(trigger.name ?? "No Name")
-//                Updated Notes: \(trigger.notes ?? "No Notes")
-//                Updated Date: \(trigger.date_unix)
-//                """)
-//        }
-//        
-       
-            // THIS WORKS!
-//        let openAIAPIKey: String? = {
-//                return ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
-//        }()
-//        
-//        if let apiKey = openAIAPIKey {
-//            print("API Key: \(apiKey)")
-//        } else {
-//            print("API Key not found")
-//        }
-        
-        // Example usage of OpenAIRequest
-//        OpenAI.shared.makeRequest(prompt: "This is something") { result in
-//            isLoadingAIResponse = true
-//            DispatchQueue.main.async {
-//                if let result = result {
-//                    response = result
-//                    print("response")
-//                } else {
-//                    response = "Failed to get a response."
-//                }
-//                isLoadingAIResponse = false
-//            }
-//        }
         
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
