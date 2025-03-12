@@ -65,6 +65,7 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         }
     }
     
+    
     /**
         NOT IN USE: An array of paragraphs.
      */
@@ -249,7 +250,6 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
         }
         
         return tempTokens
-        
     }
     
     /*
@@ -291,57 +291,59 @@ class SpeechRecognizer: NSObject, SFSpeechRecognizerDelegate {
             
             let processor = TokenProcessor()
             
-            print("TOKENS!!")
+           // transcriptionWithPuncation is the value that the listen View watches for regular OpenAI API Requests
             for token in self.tokens {
-                print("token: \(token)")
-            }
-            
-            for token in self.tokens {
-                
                 let punctuatedText = processor.addPunctuation(to: token)
                 self.transcriptionWithPunctuation += " " + punctuatedText
             }
             
-            //if let sentimentAnalysis = SentimentAnalysis() {
-                //if let lastToken = self.tokens[self.tokens.count - 1] ?? {
-                let lastCompleteToken = self.tokens[self.tokens.count - 2]
-                //if lastToken {
-                    //let sentiment = sentimentAnalysis.analyzeSentiment(for: punctuatedText)
-                    //let sentiment = sentimentAnalysis.analyzeSentiment(for: lastToken)
-                    let sentiment = classificationService.predictSentiment(from: lastCompleteToken)
-                    //self.sentiment = sentiment
-                    print("sentiment!!!")
-                    //self.sentiment = \(sentiment)
-                    // convert sentiment to string
-                    self.sentiment = "\(sentiment)"
-                    self.sentiments.append("\(sentiment)")
-            
-                    //print("lastToken: \(lastToken)")
-                    print("sentiment for \(lastCompleteToken)")
-            
-                    StatementManager.shared.createStatement(
-                        text: lastCompleteToken,
-                        is_processed: false,
-                        date_unix: Int32(Date().timeIntervalSince1970)
-                    )
-            
-            
-                //} else {
-                //    print("This is a repeat")
-                //}
-            //} else {
-                print("Could not create sentiment analysis object")
-            //}
-            
-            
+            let lastCompleteToken = self.tokens[self.tokens.count - 2]
+               
+            manageSentiments(lastCompleteToken: lastCompleteToken)
+            manageStatements(lastCompleteToken: lastCompleteToken)
             
         } else {
             self.tokens = self.addLastToken(from: words.map { String($0) }, processedTranscription: processedTranscription)
         }
         
-        //let lastToken = self.tokens.last ?? ""
-        
         return processedTranscription
+    }
+    
+    /**
+    Manages the statements in the database.
+    @param  lastCompleteToken - the last complete token in the transcription
+     */
+    func manageStatements(lastCompleteToken: String) {
+        StatementManager.shared.createStatement(
+            text: lastCompleteToken,
+            is_processed: false,
+            date_unix: Int32(Date().timeIntervalSince1970)
+        )
+    }
+    
+    /**
+    Manages the sentiments in the database.
+     Predicts sentiment using AI chip
+     Saves santiment to Data model
+    @param  lastCompleteToken - the last complete token in the transcription
+     */
+    func manageSentiments(lastCompleteToken: String) {
+        let sentiment = classificationService.predictSentiment(from: lastCompleteToken)
+        
+        print("mangageSentiment()")
+
+        self.sentiment = "\(sentiment)"
+        self.sentiments.append("\(sentiment)")
+        
+        SentimentManager.shared.createSentiment(
+            name: self.sentiment,
+            date_unix: Int32(Date().timeIntervalSince1970)
+        )
+        
+//        let sentiments = SentimentManager.shared.fetchSentiments()
+//        for sentiment in sentiments {
+//            print("Sentiment from DB: \(sentiment.name ?? "No text")")
+//        }
     }
     
     /**

@@ -8,9 +8,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     override init() {
         super.init()
         self.locationManager.delegate = self
-        print("yay")
         self.locationManager.requestWhenInUseAuthorization()
-        //self.locationManager.requestAlwaysAuthorization()
         self.locationManager.startUpdatingLocation()
     }
 
@@ -27,14 +25,11 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         switch manager.authorizationStatus {
             case .notDetermined:
                 manager.requestAlwaysAuthorization()
-                print("ttest2");
             case .restricted, .denied:
                 print("Location access denied.")
             case .authorizedWhenInUse, .authorizedAlways:
-                print("another test");
                 manager.startUpdatingLocation()
             @unknown default:
-                print("something else")
                 break
             }
         }

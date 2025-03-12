@@ -1,6 +1,6 @@
 import UIKit
 
-enum Sentiment {
+enum Sentiment2 {
   case neutral
   case positive
   case negative

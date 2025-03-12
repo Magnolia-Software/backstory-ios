@@ -11,10 +11,42 @@ class OpenAI {
     
     static let shared = OpenAI()
     
-    private init() {}
+    public init() {}
+    
+    struct OpenAIRequest: Codable {
+        let emotion: String
+        let triggers: [String]
+        let flashbacks: [String]
+    }
+    
+    struct OpenAIResponse: Codable {
+        let emotion: Emotion2
+        let triggers: [String]
+        let flashbacks: [String]
+    }
+    
+    public func processOpenAIResponse(_ response: String) -> OpenAIResponse {
+        var cleanedResponse = response.replacingOccurrences(of: "```", with: "")
+        cleanedResponse = cleanedResponse.replacingOccurrences(of: "json", with: "")
+        print("CLEANED RESPONSE: \(cleanedResponse)")
+        guard let jsonData = cleanedResponse.data(using: .utf8) else {
+            print("Error: Cannot convert response string to data")
+            return OpenAIResponse(emotion: Emotion2(name: "", color: ""), triggers: [], flashbacks: [])
+        }
+
+        do {
+            let decodedResponse = try JSONDecoder().decode(OpenAIRequest.self, from: jsonData)
+            let emotionManager = EmotionManager.shared
+            let emotion = emotionManager.handleAiEmotion(emotion: decodedResponse.emotion)
+            return OpenAIResponse(emotion: emotion, triggers: decodedResponse.triggers, flashbacks: decodedResponse.flashbacks)
+        } catch {
+            print("Error: Failed to decode JSON response - \(error.localizedDescription)")
+        }
+        
+        return OpenAIResponse(emotion: Emotion2(name: "", color: ""), triggers: [], flashbacks: [])
+    }
     
     func makeRequest(prompt: [String : [String]], completion: @escaping (String?) -> Void) {
-        print("Starting request with prompt: \(prompt)")
         
         guard let urlString = ProcessInfo.processInfo.environment["OPENAI_API_URL"],
               let url = URL(string: urlString) else {
@@ -56,8 +88,10 @@ class OpenAI {
                                 ], 
                                 "model2": [
                                     {"uuid": "UUID2", "name": "The name of the model entry", "model1s": ["UUID1"]}
-                                ]
+                                ],
+                                "emotion": "Joy"
                             }
+                            Emotion values must always be one word.  The response should only ever contain one emotion.
                     In "models2": ["UUID2"], "models2" is the name of the model that model has a relationship with. In "model1s": ["UUID1"], "model1s" is the name of the model that has a relationship with the current model.  So please change those to appropriate names.  It should be a plural noun matching the model name.
                     Return empty arrays if there's no obvious match in the text. Do not include the name of the model in the name of the entry, or any close name - focus on the content of the entry. Use natural language in the names. They should be human readable. The value of name properties should be around 5 words or less but it's not strict. If there are multiple entries that are basically the same, use the first only.
                     You will be recieving a set of user statements as a paragraph.  
@@ -71,6 +105,108 @@ class OpenAI {
                                 Has flashbacks
                             - flashbacks
                                 Has triggers
+                            - emotion: pick one from from this list - name should be one word only:
+                                Joy
+                                Serenity
+                                Ecstasy
+                                Cheerfulness
+                                Contentment
+                                Happiness
+                                Trust
+                                Acceptance
+                                Admiration
+                                Kindness
+                                Friendliness
+                                Loyalty
+                                Fear
+                                Apprehension
+                                Terror
+                                Nervousness
+                                Anxiety
+                                Worry
+                                Surprise
+                                Distraction
+                                Amazement
+                                Shock
+                                Astonishment
+                                Wonder
+                                Sadness
+                                Pensiveness
+                                Grief
+                                Sorrow
+                                Despair
+                                Melancholy
+                                Disgust
+                                Boredom
+                                Loathing
+                                Aversion
+                                Distaste
+                                Revulsion
+                                Anger
+                                Annoyance
+                                Rage
+                                Irritation
+                                Exasperation
+                                Hostility
+                                Anticipation
+                                Interest
+                                Vigilance
+                                Eagerness
+                                Excitement
+                                Curiosity
+                                Love
+                                Affection
+                                Adoration
+                                Passion
+                                Infatuation
+                                Fondness
+                                Shock
+                                Astonishment
+                                Wonder
+                                Disbelief
+                                Amazement
+                                Confidence
+                                Pride
+                                Self-assurance
+                                Certainty
+                                Courage
+                                Boldness
+                                Contempt
+                                Disdain
+                                Scorn
+                                Derision
+                                Disrespect
+                                Disregard
+                                Remorse
+                                Guilt
+                                Regret
+                                Shame
+                                Contrition
+                                Repentance
+                                Disappointment
+                                Disillusionment
+                                Letdown
+                                Frustration
+                                Regret
+                                Resignation
+                                Hope
+                                Anticipation
+                                Optimism
+                                Expectation
+                                Desire
+                                Aspiration
+                                Gratitude
+                                Thankfulness
+                                Appreciation
+                                Recognition
+                                Gratefulness
+                                Obligation
+                                Jealousy
+                                Envy
+                                Covetousness
+                                Resentment
+                                Insecurity
+                                Suspicion
                     """
                 ],
                 [
