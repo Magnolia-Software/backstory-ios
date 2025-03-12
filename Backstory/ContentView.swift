@@ -16,6 +16,15 @@ enum Route {
 class Router: ObservableObject {
     @Published var currentRoute: Route = .splash
     
+    init() {
+        // Check the environment variable DEV_MODE
+        if let devMode = ProcessInfo.processInfo.environment["DEV_MODE"], devMode == "1" {
+            currentRoute = .listen
+        } else {
+            currentRoute = .splash
+        }
+    }
+
     func navigate(to route: Route) {
         currentRoute = route
     }
@@ -88,10 +97,15 @@ struct Splash: View {
         .onAppear {
             // Start a timer to automatically dismiss the splash screen after 5 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                if router.currentRoute == .splash {
-                    router.navigate(to: .privacy)
+                guard let devMode = ProcessInfo.processInfo.environment["DEV_MODE"] else {
+                    print("DEV_MODE key is missing")
+                    return
                 }
-                
+                if devMode != "1" {
+                    if router.currentRoute == .splash {
+                        router.navigate(to: .privacy)
+                    }
+                }
             }
         }
     }

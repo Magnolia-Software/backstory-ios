@@ -35,7 +35,12 @@ extension Trigger: Identifiable {
 class TriggerManager {
     static let shared = TriggerManager()
     
-    private init() {}
+    public init() {}
+    
+    func handleAiTriggers(triggers: [String]) {
+        print("HANDLE AI TRIGGERS")
+        print(triggers)
+    }
     
     func createTrigger(
         name: String,

@@ -8,7 +8,7 @@
 import SwiftUI
 import Speech
 import CoreData
-
+import UIKit
 /**
     The Listen view is responsible for handling the speech recognition functionality.
     It provides a user interface to start and stop listening, and displays the transcribed text.
@@ -29,17 +29,23 @@ struct Listen: View {
     @State private var response: String = ""
     @State private var isLoadingAIResponse: Bool = false
     @State private var changeCounter: Int = 0
-    
+    //@ObservedObject var emotionViewModel = EmotionViewModel()
+    //@ObservedObject var emotionManager = EmotionManager.shared
+    //@ObservedObject var emotionManager = EmotionManager.shared
+    @State private var emotionName = ""
+    @State private var emotionColor = "#eeeeee"
+        
     var body: some View {
         
             // WHOLE WINDOW FRAME BG COLOR
             Text("")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .frame(width: UIScreen.main.bounds.width)
-                .background(isListening ? Color.red : Color.gray)
+                .background(isListening ? Color(UIColor(hex: emotionColor)) : Color.red)
                 .foregroundColor(Color.white)
                 .font(.largeTitle)
                 .animation(.easeInOut(duration: 1.0), value: isListening)
+                .animation(.easeInOut(duration: 2.0), value: emotionColor)
             VStack {
                 ZStack {
                     VStack {
@@ -63,8 +69,35 @@ struct Listen: View {
                             .frame(height: isListening ? 0 : nil)
                             .clipped()
                             .animation(.easeInOut(duration: 1.0), value: isListening)
+                        //Text("EmotionManager shared: \(emotionManager)")
+                        
+                        
                         // tokens (phrases between 1 second pauses) as a list
                         if isListening {
+//                            List {
+//                                if let emotions = emotionViewModel.emotionWheel?.emotions {
+//                                    ForEach(emotions) { emotion in
+//                                        Section(header: Text(emotion.name).font(.headline).padding(.leading, 8)) {
+//                                            EmotionRow(emotion: emotion)
+//                                            ForEach(emotion.secondary) { secondaryEmotion in
+//                                                SecondaryEmotionRow(secondaryEmotion: secondaryEmotion)
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                            List {
+//                                if let emotions = emotionViewModel.emotionWheel?.emotions {
+//                                    ForEach(emotions) { emotion in
+//                                        EmotionRow(emotion: emotion)
+//                                    }
+//                                }
+//                            }
+                            Text("EmotionName: \(emotionName)")
+                                .foregroundColor(Color.blue)
+                                .background(Color.white)
+                                .padding(50)
+                            Text("Emotion Color: \(emotionColor)")
                             List(sentiments, id: \.self) { sentiment in
                                 Text(sentiment)
                                     .foregroundColor(Color.black)
@@ -106,7 +139,29 @@ struct Listen: View {
    
                 }
             }
-            .onChange(of: transcriptionWithPunctuation) { oldValue, newValue in processTranscription(newValue)}
+            .onChange(of: transcriptionWithPunctuation) { oldValue, newValue in processTranscription(newValue)
+            }
+            .onChange(of: response) { oldValue, newValue in
+                //processOpenAIResponse(newValue)
+                let openAI = OpenAI()
+                let formattedRepsonse = openAI.processOpenAIResponse(newValue)
+                self.emotionName = formattedRepsonse.emotion.name
+                self.emotionColor = formattedRepsonse.emotion.color
+            }
+    }
+    
+    struct EmotionRow: View {
+        let emotion: Emotion2
+        
+        var body: some View {
+            HStack {
+                Color(UIColor(hex: emotion.color))
+                    .frame(width: 20, height: 20)
+                    .cornerRadius(5)
+                Text(emotion.name)
+                    .padding(.leading, 8)
+            }
+        }
     }
     
     /**
@@ -135,16 +190,9 @@ struct Listen: View {
             doFetch = true
         }
         
-        
         if doFetch {
-            // get any unread tokens from the database
             let statements = StatementManager.shared.fetchUnprocessedStatements()
-            for statement in statements {
-                print("""
-                    UNPROCESSED Statement: \(statement.text ?? "empty")
-                    """)
-            }
-            // Create a JSON object with the statements
+            
             let json = [
                 "statements": statements.map { statement in
                     return
@@ -152,9 +200,7 @@ struct Listen: View {
                     
                 }
             ]
-            // if there is one or more statements
             if statements.count > 0 {
-                // make an API request to the OpenAI API
                 makeAPIRequest(with: json)
             }
         }
@@ -174,12 +220,13 @@ struct Listen: View {
             DispatchQueue.main.async {
                 self.isLoadingAIResponse = false
                 guard let response = response else {
-                    //print("Failed to get response from OpenAI API")
                     return
                 }
                 self.response = response
-                // Update the UI with the response or perform any other actions needed
-                print("SUCCESS FROM API")
+                guard response.data(using: .utf8) != nil else {
+                    print("Error: Cannot convert response string to data")
+                    return
+                }
             }
         }
     }
@@ -203,21 +250,7 @@ struct Listen: View {
         - Returns: Void
     */
     private func startListening() {
-        
-        // Create a new Flashback
-        FlashbackManager.shared.createFlashback(
-            name: "flashback 1"
-        )
-        
-        // Fetch all flashbacks
-        let flashbacks = FlashbackManager.shared.fetchFlashbacks()
-        for flashback in flashbacks {
-            print("""
-                Flashback Name: \(flashback.name ?? "No Name")
-                """)
-        }
 
-        
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
             case .authorized:
@@ -255,18 +288,15 @@ struct Listen: View {
                             }
                             
                             if speechRecognizer.speechRecognizer?.isAvailable == true {
-                                print("Starting speech recognizer")
                                 speechRecognizer.startRecording()
                             }
                         }
 
                     } else {
-                        print("microphone permission denied")
+                        print("microphone request denied")
+                        toastManager.showToast(message: "This app requires speech recognition permission to function.  Please authorize speech recognition to continue. (Denied)")
                     }
                 }
-                
-                
-                
                 
             case .denied:
                 toastManager.showToast(message: "This app requires speech recognition permission to function.  Please authorize speech recognition to continue. (Denied)")
@@ -280,5 +310,58 @@ struct Listen: View {
             }
         }
         
+    }
+}
+
+// Helper to convert HEX color code to Color
+extension Color {
+    init(hex: String) {
+        print(hex)
+        let scanner = Scanner(string: hex)
+        scanner.currentIndex = hex.startIndex
+        var rgbValue: UInt64 = 0
+        scanner.scanHexInt64(&rgbValue)
+        let red = Double((rgbValue & 0xFF0000) >> 16) / 255.0
+        let green = Double((rgbValue & 0x00FF00) >> 8) / 255.0
+        let blue = Double(rgbValue & 0x0000FF) / 255.0
+        self.init(red: red, green: green, blue: blue)
+    }
+}
+
+extension UIColor {
+    convenience init(red: Int, green: Int, blue: Int) {
+        assert(red >= 0 && red <= 255, "Invalid red component")
+        assert(green >= 0 && green <= 255, "Invalid green component")
+        assert(blue >= 0 && blue <= 255, "Invalid blue component")
+
+        self.init(red: CGFloat(red) / 255.0, green: CGFloat(green) / 255.0, blue: CGFloat(blue) / 255.0, alpha: 1.0)
+    }
+
+    convenience init(rgb: Int) {
+        self.init(
+            red: (rgb >> 16) & 0xFF,
+            green: (rgb >> 8) & 0xFF,
+            blue: rgb & 0xFF
+        )
+    }
+
+    // Convert hex string to UIColor
+    convenience init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+        var rgb: UInt64 = 0
+
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+        let red = (rgb >> 16) & 0xFF
+        let green = (rgb >> 8) & 0xFF
+        let blue = rgb & 0xFF
+
+        self.init(
+            red: Int(red),
+            green: Int(green),
+            blue: Int(blue)
+        )
     }
 }
