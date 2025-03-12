@@ -26,32 +26,19 @@ class OpenAI {
     }
     
     public func processOpenAIResponse(_ response: String) -> OpenAIResponse {
-        print("------------------++++-----------------")
-        print(response)
-        guard let jsonData = response.data(using: .utf8) else {
+        var cleanedResponse = response.replacingOccurrences(of: "```", with: "")
+        cleanedResponse = cleanedResponse.replacingOccurrences(of: "json", with: "")
+        print("CLEANED RESPONSE: \(cleanedResponse)")
+        guard let jsonData = cleanedResponse.data(using: .utf8) else {
             print("Error: Cannot convert response string to data")
             return OpenAIResponse(emotion: Emotion2(name: "", color: ""), triggers: [], flashbacks: [])
         }
-        
-        print("json data")
-        print(jsonData)
-        
-        
-        
+
         do {
-            print("AAAAAAAAA")
             let decodedResponse = try JSONDecoder().decode(OpenAIRequest.self, from: jsonData)
-            
-            print("decodedResponse")
-            print(decodedResponse)
-            
-            print("EMOTION")
-            print(decodedResponse.emotion)
             let emotionManager = EmotionManager.shared
             let emotion = emotionManager.handleAiEmotion(emotion: decodedResponse.emotion)
-            
             return OpenAIResponse(emotion: emotion, triggers: decodedResponse.triggers, flashbacks: decodedResponse.flashbacks)
-
         } catch {
             print("Error: Failed to decode JSON response - \(error.localizedDescription)")
         }
@@ -60,7 +47,6 @@ class OpenAI {
     }
     
     func makeRequest(prompt: [String : [String]], completion: @escaping (String?) -> Void) {
-        print("Starting request with prompt: \(prompt)")
         
         guard let urlString = ProcessInfo.processInfo.environment["OPENAI_API_URL"],
               let url = URL(string: urlString) else {

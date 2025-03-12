@@ -29,9 +29,6 @@ struct Listen: View {
     @State private var response: String = ""
     @State private var isLoadingAIResponse: Bool = false
     @State private var changeCounter: Int = 0
-    //@ObservedObject var emotionViewModel = EmotionViewModel()
-    //@ObservedObject var emotionManager = EmotionManager.shared
-    //@ObservedObject var emotionManager = EmotionManager.shared
     @State private var emotionName = ""
     @State private var emotionColor = "#eeeeee"
         
@@ -41,7 +38,7 @@ struct Listen: View {
             Text("")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .frame(width: UIScreen.main.bounds.width)
-                .background(isListening ? Color(UIColor(hex: emotionColor)) : Color.red)
+                .background(isListening ? Color(UIColor(hex: emotionColor)) : Color.gray)
                 .foregroundColor(Color.white)
                 .font(.largeTitle)
                 .animation(.easeInOut(duration: 1.0), value: isListening)
@@ -49,6 +46,20 @@ struct Listen: View {
             VStack {
                 ZStack {
                     VStack {
+                        NavigationStack() {
+                           List {
+                               Button("Home") {
+                                   router.navigate(to: .safety)
+                               }
+                               Button("Settings") {
+                                   router.navigate(to: .safety)
+                               }
+                               Button("Profile") {
+                                   router.navigate(to: .safety)
+                               }
+                           }
+                           .navigationTitle("Menu")
+                        }.environmentObject(router)
                         Spacer()
                         Text("Ready to Listen")
                             .font(.largeTitle)
@@ -69,30 +80,7 @@ struct Listen: View {
                             .frame(height: isListening ? 0 : nil)
                             .clipped()
                             .animation(.easeInOut(duration: 1.0), value: isListening)
-                        //Text("EmotionManager shared: \(emotionManager)")
-                        
-                        
-                        // tokens (phrases between 1 second pauses) as a list
                         if isListening {
-//                            List {
-//                                if let emotions = emotionViewModel.emotionWheel?.emotions {
-//                                    ForEach(emotions) { emotion in
-//                                        Section(header: Text(emotion.name).font(.headline).padding(.leading, 8)) {
-//                                            EmotionRow(emotion: emotion)
-//                                            ForEach(emotion.secondary) { secondaryEmotion in
-//                                                SecondaryEmotionRow(secondaryEmotion: secondaryEmotion)
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                            List {
-//                                if let emotions = emotionViewModel.emotionWheel?.emotions {
-//                                    ForEach(emotions) { emotion in
-//                                        EmotionRow(emotion: emotion)
-//                                    }
-//                                }
-//                            }
                             Text("EmotionName: \(emotionName)")
                                 .foregroundColor(Color.blue)
                                 .background(Color.white)
@@ -142,7 +130,6 @@ struct Listen: View {
             .onChange(of: transcriptionWithPunctuation) { oldValue, newValue in processTranscription(newValue)
             }
             .onChange(of: response) { oldValue, newValue in
-                //processOpenAIResponse(newValue)
                 let openAI = OpenAI()
                 let formattedRepsonse = openAI.processOpenAIResponse(newValue)
                 self.emotionName = formattedRepsonse.emotion.name
@@ -257,8 +244,6 @@ struct Listen: View {
                 
                 requestMicrophonePermission { granted in
                     if granted {
-                        print("Microphone permission granted")
-                        
                         DispatchQueue.main.async {
                             isListening.toggle()
                             let speechRecognizer = SpeechRecognizer.shared
@@ -316,7 +301,6 @@ struct Listen: View {
 // Helper to convert HEX color code to Color
 extension Color {
     init(hex: String) {
-        print(hex)
         let scanner = Scanner(string: hex)
         scanner.currentIndex = hex.startIndex
         var rgbValue: UInt64 = 0

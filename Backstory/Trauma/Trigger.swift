@@ -38,8 +38,8 @@ class TriggerManager {
     public init() {}
     
     func handleAiTriggers(triggers: [String]) {
-        print("HANDLE AI TRIGGERS")
-        print(triggers)
+//        print("HANDLE AI TRIGGERS")
+//        print(triggers)
     }
     
     func createTrigger(

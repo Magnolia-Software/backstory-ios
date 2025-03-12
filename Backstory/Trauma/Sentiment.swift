@@ -36,7 +36,6 @@ class SentimentManager {
         name: String,
         date_unix: Int32? = Int32(Date().timeIntervalSince1970)
     ) {
-        print("OGT HERE")
         let context = CoreDataStack.shared.persistentContainer.viewContext
         let sentiment = Sentiment(context: context)
         sentiment.name = name
