@@ -46,20 +46,6 @@ struct Listen: View {
             VStack {
                 ZStack {
                     VStack {
-                        NavigationStack() {
-                           List {
-                               Button("Home") {
-                                   router.navigate(to: .safety)
-                               }
-                               Button("Settings") {
-                                   router.navigate(to: .safety)
-                               }
-                               Button("Profile") {
-                                   router.navigate(to: .safety)
-                               }
-                           }
-                           .navigationTitle("Menu")
-                        }.environmentObject(router)
                         Spacer()
                         Text("Ready to Listen")
                             .font(.largeTitle)
@@ -238,6 +224,12 @@ struct Listen: View {
     */
     private func startListening() {
 
+        // get all installed fonts
+        for family in UIFont.familyNames.sorted() {
+            let names = UIFont.fontNames(forFamilyName: family)
+            print("Family: \(family) Font names: \(names)")
+        }
+        
         SFSpeechRecognizer.requestAuthorization { authStatus in
             switch authStatus {
             case .authorized:
