@@ -4,5 +4,11 @@
 <dict>
 	<key>Speech Recognition</key>
 	<string></string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>AbrilFatface-Regular.ttf</string>
+		<string>NotoSans-Italic-VariableFont_wdth,wght.ttf</string>
+		<string>NotoSans-VariableFont_wdth,wght.ttf</string>
+	</array>
 </dict>
 </plist>
