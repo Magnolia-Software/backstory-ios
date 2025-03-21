@@ -25,6 +25,10 @@
         <attribute name="date_unix" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="name" optional="YES" attributeType="String"/>
     </entity>
+    <entity name="Setting" representedClassName=".Setting" syncable="YES">
+        <attribute name="date_user_accepted_agreement" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
+        <attribute name="is_safety_check_hidden" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+    </entity>
     <entity name="Statement" representedClassName=".Statement" syncable="YES">
         <attribute name="date_unix" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="is_processed" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
