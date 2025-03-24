@@ -87,7 +87,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DEV_MODE"
-            value = "0"
+            value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>

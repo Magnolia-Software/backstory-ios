@@ -20,7 +20,7 @@ class Router: ObservableObject {
     init() {
         // Check the environment variable DEV_MODE
         if let devMode = ProcessInfo.processInfo.environment["DEV_MODE"], devMode == "1" {
-            currentRoute = .safety
+            currentRoute = .diagnostic
         } else {
             // get settings
 //            let settings = SettingManager.shared.fetchSettings()
@@ -81,13 +81,3 @@ struct ContentView: View {
         
     }
 }
-
-//struct Content: View {
-//    @StateObject private var router = Router()
-//    
-//    var body: some View {
-//        ContentView()
-////        ListenView(router: router)
-//        ListenView()
-//    }
-//}

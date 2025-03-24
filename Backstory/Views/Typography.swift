@@ -21,6 +21,21 @@ struct BodyText: View {
     }
 }
 
+struct BackLink: View {
+    var text: String
+    
+    var body: some View {
+        Text(text)
+            .font(Stylesheet.Fonts.body)
+            .foregroundColor(Stylesheet.Colors.action2)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 10)
+            .padding(.horizontal, 10)
+            .padding(.bottom, 5)
+            
+    }
+}
+
 struct Heading2Text: View {
     
     var text: String

@@ -20,7 +20,7 @@ struct Diagnostic: View {
                     }
             }
             Tab("Explore", systemImage: "magnifyingglass") {
-                Text("Explore View")
+                Explore()
             }
             Tab("Settings", systemImage: "gear") {
                 Settings()

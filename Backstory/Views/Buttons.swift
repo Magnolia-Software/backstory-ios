@@ -87,6 +87,47 @@ struct ActionButtonAlt: View {
     }
 }
 
+struct FormButton: View {
+    
+    var title: String
+    var action: () -> Void
+    var alt: Bool = false
+    var position: String = "leading"
+    
+    private var alignment: Alignment {
+        switch position {
+        case "leading":
+            return .leading
+        case "center":
+            return .center
+        case "trailing":
+            return .trailing
+        default:
+            return .leading
+        }
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .textCase(.uppercase)
+                .kerning(1.1)
+                .foregroundColor(Stylesheet.Colors.background)
+                .padding(.vertical, 15)
+                .padding(.horizontal, 40)
+                .background(Stylesheet.Colors.action)
+                .cornerRadius(30)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .font(Stylesheet.Fonts.button)
+        }
+        .background(Stylesheet.Colors.background)
+        //.padding()
+        .padding(.top, 0)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 struct CloseButton: View {
     
     var action: () -> Void

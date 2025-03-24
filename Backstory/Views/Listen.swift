@@ -299,3 +299,57 @@ extension UIColor {
         return isLight() ? .black : .white
     }
 }
+
+// Create a new trigger
+//        TriggerManager.shared.createTrigger(name: "Loud Noise 23", notes: "Triggered 2 by loud noises like fireworks.")
+//
+//        // Fetch all triggers
+//        let triggers = TriggerManager.shared.fetchTriggers()
+//        for trigger in triggers {
+//            print("""
+//                Trigger Name: \(trigger.name ?? "No Name")
+//                Notes: \(trigger.notes ?? "No Notes")
+//                Date: \(trigger.date_unix)
+//                """)
+//        }
+
+//        // Assuming you want to delete the first trigger
+//        if let firstTrigger = triggers.first {
+//            TriggerManager.shared.deleteTrigger(firstTrigger)
+//        }
+//
+//        // Fetch all triggers again to see the updated list
+//        let updatedTriggers = TriggerManager.shared.fetchTriggers()
+//        for trigger in updatedTriggers {
+//            print("""
+//                Updated Trigger Name: \(trigger.name ?? "No Name")
+//                Updated Notes: \(trigger.notes ?? "No Notes")
+//                Updated Date: \(trigger.date_unix)
+//                """)
+//        }
+//
+
+          // THIS WORKS!
+//        let openAIAPIKey: String? = {
+//                return ProcessInfo.processInfo.environment["OPENAI_API_KEY"]
+//        }()
+//
+//        if let apiKey = openAIAPIKey {
+//            print("API Key: \(apiKey)")
+//        } else {
+//            print("API Key not found")
+//        }
+
+      // Example usage of OpenAIRequest
+//        OpenAI.shared.makeRequest(prompt: "This is something") { result in
+//            isLoadingAIResponse = true
+//            DispatchQueue.main.async {
+//                if let result = result {
+//                    response = result
+//                    print("response")
+//                } else {
+//                    response = "Failed to get a response."
+//                }
+//                isLoadingAIResponse = false
+//            }
+//        }
