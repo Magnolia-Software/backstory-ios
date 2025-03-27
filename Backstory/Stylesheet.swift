@@ -13,6 +13,7 @@ struct Stylesheet {
         static let heading2 = Font.custom("CantataOne-Regular", size: 36)
         static let heading3 = Font.custom("CantataOne-Regular", size: 20)
         static let body = Font.custom("NotoSans-Regular", size: 18)
+        static let formError = Font.custom("NotoSans-Regular", size: 16)
         static let button = Font.custom("NotoSans-Regular", size: 16)
     }
     
@@ -42,5 +43,6 @@ struct Stylesheet {
         static let altBackground = Color(UIColor(hex: "#ea9d8a"))
         static let altBackground2 = Color(UIColor(hex: "#eeeeee"))
         static let body = Color(UIColor(hex: "#999999"))
+        static let formError = Color(UIColor(hex: "#d55769"))
     }
 }

@@ -12,9 +12,11 @@ struct FlashbacksView: View {
     @State private var route: FlashbacksRoute = .flashbacks
     @State private var flashbackDate = Date()
     @State private var flashbackName = ""
-    @State private var flashbackNameError = ""
+    @State private var flashbackNameError: String? = nil
     @State private var flashbackDescription = ""
-    @State private var flashbackDescriptionError = ""
+    @State private var flashbackDescriptionError: String? = nil
+    @State private var errorString = ""
+    @State private var errorThrown = false
     @EnvironmentObject var toastManager: ToastManager
     
     enum FlashbacksRoute {
@@ -26,36 +28,64 @@ struct FlashbacksView: View {
         FlashbackManager.shared.createFlashback(name: flashbackName, desc: flashbackDescription, date_unix: Int32(flashbackDate.timeIntervalSince1970))
         toastManager.showToast(message: "Flashback created successfully.")
         route = .flashbacks
-       
     }
     
     private func validateForm() throws {
+        flashbackNameError = nil
+        flashbackDescriptionError = nil
+        errorThrown = false
+        
         do {
-            try Validation.isString(flashbackName)
-            try Validation.isRequired(flashbackName)
-            try Validation.stringMin(flashbackName, min: 3)
-            try Validation.stringMax(flashbackName, max: 10)
-        } catch let error as ValidationError {
-            throw BackstoryError(message: error.localizedDescription)
+            try Validation.isRequired(flashbackName, errorVar: &flashbackNameError)
+        } catch {
+            errorThrown = true
         }
+        do {
+            try Validation.stringMin(flashbackName, min: 1, errorVar: &flashbackNameError)
+        } catch {
+            errorThrown = true
+        }
+        do {
+            try Validation.stringMax(flashbackName, max: 100, errorVar: &flashbackNameError)
+        } catch {
+            errorThrown = true
+        }
+        do {
+            try Validation.isRequired(flashbackDescription, errorVar: &flashbackDescriptionError)
+        } catch {
+            errorThrown = true
+        }
+        do {
+            try Validation.stringMax(flashbackDescription, max: 1000, errorVar: &flashbackDescriptionError)
+        } catch {
+            errorThrown = true
+        }
+        if errorThrown {
+            throw ValidationError("Please fix the errors in the form and try again.")
+        }
+        
     }
+    
     
     private func processForm() {
         do {
             try validateForm()
-            toastManager.showToast(message: "Form is valid.")
-            // saveFlashback()
-        } catch let backstoryError as BackstoryError {
-            toastManager.showToast(message: backstoryError.message)
+            // look through all the validations and if there are no errors, save the flashback
+            
+            saveFlashback()
+            route = .flashbacks
+            toastManager.showToast(message: "Flashback created successfully.")
+        } catch let error as BackstoryError {
+            toastManager.showToast(message: error.message)
+        } catch let error as ValidationError {
+            toastManager.showToast(message: error.message)
         } catch {
-            toastManager.showToast(message: "An error occurred when attempting to validate the form.")
+            print("An unknown error occurred when attempting to validate the form.")
         }
     }
     
     var body: some View {
-        
-        
-        
+
         VStack {
             VStack {
                 switch route {
@@ -67,7 +97,6 @@ struct FlashbacksView: View {
                         Text("Flashbacks")
                             .font(Stylesheet.Fonts.heading3)
                             .foregroundColor(Stylesheet.Colors.heading2)
-                            
                     }
                     .padding()
                     .padding(.leading, 10)
@@ -124,18 +153,40 @@ struct FlashbacksView: View {
                                 Section(header: Text("Name")) {
                                     TextField("Name", text: $flashbackName)
                                         .font(Stylesheet.Fonts.body)
-                                    Text(flashbackNameError)
-                                        .foregroundColor(.red)
-                                        .font(Stylesheet.Fonts.body)
+                                        
+
+                                    if flashbackNameError != nil {
+                                        Text(flashbackNameError ?? "")
+                                            .foregroundColor(Stylesheet.Colors.error)
+                                            .font(Stylesheet.Fonts.formError)
+                                    }
                                 }
+                                
                                 Section(header: Text("Description")) {
                                     TextEditor(text: $flashbackDescription)
                                         .frame(height: 150)
                                         .font(Stylesheet.Fonts.body)
-                                    Text(flashbackNameError)
-                                        .foregroundColor(.red)
-                                        .font(Stylesheet.Fonts.body)
+                                        .border(flashbackDescriptionError != nil ? Stylesheet.Colors.error : Color.clear)
+                                    if flashbackDescriptionError != nil {
+                                        Text(flashbackDescriptionError ?? "")
+                                            .foregroundColor(Stylesheet.Colors.error)
+                                            .font(Stylesheet.Fonts.formError)
+                                    }
                                 }
+                                
+                                
+//                                Section(header: Text("Description")) {
+//                                    TextEditor(text: $flashbackDescription)
+//                                        .frame(height: 150)
+//                                        .font(Stylesheet.Fonts.body)
+//                                        .border(flashbackDescriptionError != nil ? Color.red : Color.clear)
+//                                    if flashbackDescriptionError != nil? {
+//                                        Text(flashbackDescriptionError ?? "")
+//                                            .foregroundColor(.red)
+//                                            .font(Stylesheet.Fonts.body)
+//                                    }
+//                                    
+//                                }
                                 
                             }
                             FormButton(title: "Create", action: {
