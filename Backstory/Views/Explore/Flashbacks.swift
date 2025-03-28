@@ -35,43 +35,23 @@ struct FlashbacksView: View {
         flashbackDescriptionError = nil
         errorThrown = false
         
-        do {
-            try Validation.isRequired(flashbackName, errorVar: &flashbackNameError)
-        } catch {
-            errorThrown = true
-        }
-        do {
-            try Validation.stringMin(flashbackName, min: 1, errorVar: &flashbackNameError)
-        } catch {
-            errorThrown = true
-        }
-        do {
-            try Validation.stringMax(flashbackName, max: 100, errorVar: &flashbackNameError)
-        } catch {
-            errorThrown = true
-        }
-        do {
-            try Validation.isRequired(flashbackDescription, errorVar: &flashbackDescriptionError)
-        } catch {
-            errorThrown = true
-        }
-        do {
-            try Validation.stringMax(flashbackDescription, max: 1000, errorVar: &flashbackDescriptionError)
-        } catch {
-            errorThrown = true
-        }
-        if errorThrown {
-            throw ValidationError("Please fix the errors in the form and try again.")
-        }
+        let fields: [(value: String, errorVar: (inout String?) -> Void, rules: [(String, inout String?) throws -> Void])] = [
+            (value: flashbackName, errorVar: { self.flashbackNameError = $0 }, rules: [
+                Validation.isRequired,
+                { try Validation.stringMin($0, min: 1, errorVar: &$1) },
+                { try Validation.stringMax($0, max: 100, errorVar: &$1) }
+            ]),
+            (value: flashbackDescription, errorVar: { self.flashbackDescriptionError = $0 }, rules: [
+            { try Validation.stringMax($0, max: 1000, errorVar: &$1) }
+            ])
+        ]
         
+        try ValidationManager.validate(fields: fields)
     }
-    
     
     private func processForm() {
         do {
             try validateForm()
-            // look through all the validations and if there are no errors, save the flashback
-            
             saveFlashback()
             route = .flashbacks
             toastManager.showToast(message: "Flashback created successfully.")
@@ -174,23 +154,8 @@ struct FlashbacksView: View {
                                     }
                                 }
                                 
-                                
-//                                Section(header: Text("Description")) {
-//                                    TextEditor(text: $flashbackDescription)
-//                                        .frame(height: 150)
-//                                        .font(Stylesheet.Fonts.body)
-//                                        .border(flashbackDescriptionError != nil ? Color.red : Color.clear)
-//                                    if flashbackDescriptionError != nil? {
-//                                        Text(flashbackDescriptionError ?? "")
-//                                            .foregroundColor(.red)
-//                                            .font(Stylesheet.Fonts.body)
-//                                    }
-//                                    
-//                                }
-                                
                             }
                             FormButton(title: "Create", action: {
-                                //saveFlashback()
                                 processForm()
                             })
                             .padding()
@@ -199,13 +164,11 @@ struct FlashbacksView: View {
                         Spacer()
                     }
                     Spacer()
-                    //.padding()
+
                     
                 }
                 
-                // Add more content for the Flashbacks view here
             }
-//            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.white)
         }
         
