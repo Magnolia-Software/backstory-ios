@@ -6,54 +6,70 @@
 //
 
 import Foundation
+import SwiftUI
+import Combine
 
-struct Validation {
-    
-    // Checks if the value is a string
-    static func isString(_ value: Any) throws {
-        guard value is String else {
-            throw ValidationError.invalidType
+
+struct ValidationManager {
+    static func validate(fields: [(value: String, errorVar: (inout String?) -> Void, rules: [(String, inout String?) throws -> Void])]) throws {
+        var errorThrown = false
+        
+        for (value, setErrorVar, rules) in fields {
+            var errorVar: String? = nil
+            do {
+                try Validation.runValidationRules(rules: rules, value: value, errorVar: &errorVar)
+            } catch {
+                errorThrown = true
+            }
+            setErrorVar(&errorVar)
         }
-    }
-    
-    // Checks if the string length is greater than or equal to the min length
-    static func stringMin(_ value: String, min: Int) throws {
-        guard value.count >= min else {
-            throw ValidationError.tooShort(min: min)
-        }
-    }
-    
-    // Checks if the string length is less than or equal to the max length
-    static func stringMax(_ value: String, max: Int) throws {
-        guard value.count <= max else {
-            throw ValidationError.tooLong(max: max)
-        }
-    }
-    
-    // Checks if the string is not empty (required)
-    static func isRequired(_ value: String) throws {
-        guard !value.isEmpty else {
-            throw ValidationError.required
+        
+        if errorThrown {
+            throw ValidationError("Please fix the errors in the form and try again.")
         }
     }
 }
 
-enum ValidationError: Error, LocalizedError {
-    case invalidType
-    case tooShort(min: Int)
-    case tooLong(max: Int)
-    case required
+struct Validation {
     
-    var errorDescription: String? {
-        switch self {
-        case .invalidType:
-            return "The value must be a string."
-        case .tooShort(let min):
-            return "The value must be at least \(min) characters long."
-        case .tooLong(let max):
-            return "The value must be at most \(max) characters long."
-        case .required:
-            return "This field is required."
+    static func buildValidationRules(value: String, errorVar: inout String?, rules: [(String, inout String?) throws -> Void]) -> [(String, inout String?) throws -> Void] {
+       return rules
+   }
+   
+   static func runValidationRules(rules: [(String, inout String?) throws -> Void], value: String, errorVar: inout String?) throws {
+       for rule in rules {
+           try rule(value, &errorVar)
+       }
+   }
+    
+    /** EACH VALIDATION RULE HERE */
+    
+    static func isRequired(_ value: String, errorVar: inout String?) throws{
+        guard !value.isEmpty else {
+            errorVar = "This field is required."
+            throw BackstoryError(message: "An error occured while validating the form.  Please fix the error and try again.")
         }
     }
+
+    static func isString(_ value: Any, errorVar: inout String?) throws {
+        guard value is String else {
+            errorVar = "The value must be a string."
+            throw BackstoryError(message: "An error occured while validating the form.  Please fix the error and try again.")
+        }
+    }
+
+    static func stringMin(_ value: String, min: Int, errorVar: inout String?) throws {
+        guard value.count >= min else {
+            errorVar = "The value must be at least \(min) characters long."
+            throw BackstoryError(message: "An error occured while validating the form.  Please fix the error and try again.")
+        }
+    }
+
+    static func stringMax(_ value: String, max: Int, errorVar: inout String?) throws {
+        guard value.count <= max else {
+            errorVar = "The value must be at most \(max) characters long."
+            throw BackstoryError(message: "An error occured while validating the form.  Please fix the error and try again.")
+        }
+    }
+
 }

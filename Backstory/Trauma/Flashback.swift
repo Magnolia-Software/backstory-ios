@@ -10,6 +10,7 @@
 
 import Foundation
 import CoreData
+import Combine
 
 @objc(Flashback)
 public class Flashback: NSManagedObject {
@@ -95,3 +96,41 @@ class FlashbackManager {
         CoreDataStack.shared.saveContext()
     }
 }
+
+//class FlashbackViewModel: ObservableObject {
+//    @Published var flashbackName: ValidatedField
+//    @Published var flashbackDescription: ValidatedField
+//    @Published var canSubmit: Bool = false
+//    
+//    private var cancellables = Set<AnyCancellable>()
+//    
+//    init() {
+//        // Define validation rules for flashback name.
+//        let flashbackNameRules: [AnyValidationRule<String>] = [
+//            AnyValidationRule(EmptyValidationRule(errorMessage: "Flashback name cannot be empty.")),
+//            AnyValidationRule(EmailValidationRule(errorMessage: "Please enter a valid flashback name."))
+//        ]
+//        
+//        // Define validation rules for flashback description.
+//        let flashbackDescriptionRules: [AnyValidationRule<String>] = [
+//            AnyValidationRule(EmptyValidationRule(errorMessage: "Flashback description cannot be empty.")),
+//            AnyValidationRule(SpecialCharacterValidationRule(errorMessage: "Flashback description must contain at least one special character."))
+//        ]
+//        
+//        // Initialize ValidatedFields with respective rules.
+//        self.flashbackName = ValidatedField(validationRules: flashbackNameRules)
+//        self.flashbackDescription = ValidatedField(validationRules: flashbackDescriptionRules)
+//        
+//        setupSubmitValidation()
+//    }
+//    
+//    /// Sets up the logic to determine if the form can be submitted.
+//    private func setupSubmitValidation() {
+//        Publishers.CombineLatest(flashbackName.$error, flashbackDescription.$error)
+//            .map { flashbackNameError, flashbackDescriptionError in
+//                return flashbackNameError == nil && flashbackDescriptionError == nil && !self.flashbackName.value.isEmpty && !self.flashbackDescription.value.isEmpty
+//            }
+//            .assign(to: \.canSubmit, on: self)
+//            .store(in: &cancellables)
+//    }
+//}

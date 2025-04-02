@@ -416,6 +416,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Backstory/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow us to use your location to look up safety services in your area.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need to access your microphone to continue.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow us recognuze your speech for live feedback and support.";
@@ -457,6 +459,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Backstory/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow us to use your location to look up safety services in your area.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need to access your microphone to continue.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow us recognuze your speech for live feedback and support.";

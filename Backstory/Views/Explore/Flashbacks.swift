@@ -12,9 +12,11 @@ struct FlashbacksView: View {
     @State private var route: FlashbacksRoute = .flashbacks
     @State private var flashbackDate = Date()
     @State private var flashbackName = ""
-    @State private var flashbackNameError = ""
+    @State private var flashbackNameError: String? = nil
     @State private var flashbackDescription = ""
-    @State private var flashbackDescriptionError = ""
+    @State private var flashbackDescriptionError: String? = nil
+    @State private var errorString = ""
+    @State private var errorThrown = false
     @EnvironmentObject var toastManager: ToastManager
     
     enum FlashbacksRoute {
@@ -26,36 +28,44 @@ struct FlashbacksView: View {
         FlashbackManager.shared.createFlashback(name: flashbackName, desc: flashbackDescription, date_unix: Int32(flashbackDate.timeIntervalSince1970))
         toastManager.showToast(message: "Flashback created successfully.")
         route = .flashbacks
-       
     }
     
     private func validateForm() throws {
-        do {
-            try Validation.isString(flashbackName)
-            try Validation.isRequired(flashbackName)
-            try Validation.stringMin(flashbackName, min: 3)
-            try Validation.stringMax(flashbackName, max: 10)
-        } catch let error as ValidationError {
-            throw BackstoryError(message: error.localizedDescription)
-        }
+        flashbackNameError = nil
+        flashbackDescriptionError = nil
+        errorThrown = false
+        
+        let fields: [(value: String, errorVar: (inout String?) -> Void, rules: [(String, inout String?) throws -> Void])] = [
+            (value: flashbackName, errorVar: { self.flashbackNameError = $0 }, rules: [
+                Validation.isRequired,
+                { try Validation.stringMin($0, min: 1, errorVar: &$1) },
+                { try Validation.stringMax($0, max: 100, errorVar: &$1) }
+            ]),
+            (value: flashbackDescription, errorVar: { self.flashbackDescriptionError = $0 }, rules: [
+            { try Validation.stringMax($0, max: 1000, errorVar: &$1) }
+            ])
+        ]
+        
+        try ValidationManager.validate(fields: fields)
     }
     
     private func processForm() {
         do {
             try validateForm()
-            toastManager.showToast(message: "Form is valid.")
-            // saveFlashback()
-        } catch let backstoryError as BackstoryError {
-            toastManager.showToast(message: backstoryError.message)
+            saveFlashback()
+            route = .flashbacks
+            toastManager.showToast(message: "Flashback created successfully.")
+        } catch let error as BackstoryError {
+            toastManager.showToast(message: error.message)
+        } catch let error as ValidationError {
+            toastManager.showToast(message: error.message)
         } catch {
-            toastManager.showToast(message: "An error occurred when attempting to validate the form.")
+            print("An unknown error occurred when attempting to validate the form.")
         }
     }
     
     var body: some View {
-        
-        
-        
+
         VStack {
             VStack {
                 switch route {
@@ -67,7 +77,6 @@ struct FlashbacksView: View {
                         Text("Flashbacks")
                             .font(Stylesheet.Fonts.heading3)
                             .foregroundColor(Stylesheet.Colors.heading2)
-                            
                     }
                     .padding()
                     .padding(.leading, 10)
@@ -77,7 +86,7 @@ struct FlashbacksView: View {
                         List {
                             Button(action: {
                                 route = .createFlashback
-                            }) {
+                            })  {
                                 MenuItemView(title: "Create Flashback")
                             }
                             
@@ -98,63 +107,42 @@ struct FlashbacksView: View {
                     .navigationTitle("Flashbacks")
                     Spacer()
                 case .createFlashback:
-                    VStack {
-                        VStack {
-                            Button(action: {
-                                route = .flashbacks
-                            }) {
-                                BackLink(text: "< Back")
-                            }
-                            HStack {
-                                
-                                Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                    .font(Stylesheet.Fonts.heading3)
-                                    .foregroundColor(Stylesheet.Colors.heading2)
-                                Text("Create Flashback")
-                                    .font(Stylesheet.Fonts.heading3)
-                                    .foregroundColor(Stylesheet.Colors.heading2)
-                            }
-                            .padding(.horizontal, 20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(10)
-                        
-                        VStack {
-                            Form {
-                                Section(header: Text("Name")) {
-                                    TextField("Name", text: $flashbackName)
-                                        .font(Stylesheet.Fonts.body)
-                                    Text(flashbackNameError)
-                                        .foregroundColor(.red)
-                                        .font(Stylesheet.Fonts.body)
-                                }
-                                Section(header: Text("Description")) {
-                                    TextEditor(text: $flashbackDescription)
-                                        .frame(height: 150)
-                                        .font(Stylesheet.Fonts.body)
-                                    Text(flashbackNameError)
-                                        .foregroundColor(.red)
-                                        .font(Stylesheet.Fonts.body)
-                                }
-                                
-                            }
-                            FormButton(title: "Create", action: {
-                                //saveFlashback()
-                                processForm()
-                            })
-                            .padding()
-                            Spacer()
-                        }
-                        Spacer()
+                    PageWrapperView(
+                        title: "Create Flashback",
+                        breadcrumbs: [
+                            Breadcrumb(title: "Flashbacks") { route = .flashbacks }
+                        ]
+                    ) {
+                        FormBuilder(
+                            fields: [
+                                Field(
+                                    type: .textField,
+                                    title: "Name",
+                                    binding: $flashbackName,
+                                    errorBinding: $flashbackNameError,
+                                    validationRules: [
+                                        Validation.isRequired,
+                                        { try Validation.stringMin($0, min: 1, errorVar: &$1) },
+                                        { try Validation.stringMax($0, max: 100, errorVar: &$1) }
+                                    ]
+                                ),
+                                Field(
+                                    type: .textEditor,
+                                    title: "Description",
+                                    binding: $flashbackDescription,
+                                    errorBinding: $flashbackDescriptionError,
+                                    validationRules: [
+                                        Validation.isRequired,
+                                        { try Validation.stringMax($0, max: 1000, errorVar: &$1) }
+                                    ]
+                                )
+                            ],
+                            onSubmit: { processForm() }
+                        )
                     }
-                    Spacer()
-                    //.padding()
-                    
                 }
                 
-                // Add more content for the Flashbacks view here
             }
-//            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.white)
         }
         

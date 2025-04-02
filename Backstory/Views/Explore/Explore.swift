@@ -58,13 +58,18 @@ struct Explore: View {
         VStack {
             // Heading
             HStack {
-                Image(systemName: "magnifyingglass")
-                    .font(.title)
-                    .foregroundColor(Stylesheet.Colors.background)
-                Text("Explore")
-                    .font(Stylesheet.Fonts.heading2)
-                    .foregroundColor(Stylesheet.Colors.background)
-                Spacer()
+                Button(action: {
+                    currentRoute = .menu
+                }) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.title)
+                        .foregroundColor(Stylesheet.Colors.background)
+                    Text("Explore")
+                        .font(Stylesheet.Fonts.heading2)
+                        .foregroundColor(Stylesheet.Colors.background)
+                    Spacer()
+                }
+                
                 Button(action: {
                     toggleMenu()
                 }) {
