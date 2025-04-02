@@ -13,6 +13,10 @@ class OpenAI {
     
     public init() {}
     
+//    var apiKey: String {
+//        return Bundle.main.infoDictionary?["OPENAI_API_KEY"] as? String ?? "NO_API_KEY_FOUND"
+//    }
+    
     struct OpenAIRequest: Codable {
         let emotion: String
         let triggers: [String]
@@ -59,12 +63,21 @@ class OpenAI {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        guard let apiKey = ProcessInfo.processInfo.environment["OPENAI_API_KEY"] else {
+//        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "OPENAI_API_KEY") as? String else {
+//            print("API key is missing")
+//            return
+//        }
+//
+//        print("API Key: \(apiKey)")
+//
+        
+        guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "OPENAI_API_KEY") as? String else {
             print("API key is missing")
-            completion(nil)
             return
         }
-        
+
+        print("API Key: \(apiKey)")
+
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         
         // iterate over the prompt to create a single paragraph.

@@ -86,7 +86,7 @@ struct FlashbacksView: View {
                         List {
                             Button(action: {
                                 route = .createFlashback
-                            }) {
+                            })  {
                                 MenuItemView(title: "Create Flashback")
                             }
                             
@@ -107,65 +107,39 @@ struct FlashbacksView: View {
                     .navigationTitle("Flashbacks")
                     Spacer()
                 case .createFlashback:
-                    VStack {
-                        VStack {
-                            Button(action: {
-                                route = .flashbacks
-                            }) {
-                                BackLink(text: "< Back")
-                            }
-                            HStack {
-                                
-                                Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                                    .font(Stylesheet.Fonts.heading3)
-                                    .foregroundColor(Stylesheet.Colors.heading2)
-                                Text("Create Flashback")
-                                    .font(Stylesheet.Fonts.heading3)
-                                    .foregroundColor(Stylesheet.Colors.heading2)
-                            }
-                            .padding(.horizontal, 20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .padding(10)
-                        
-                        VStack {
-                            Form {
-                                Section(header: Text("Name")) {
-                                    TextField("Name", text: $flashbackName)
-                                        .font(Stylesheet.Fonts.body)
-                                        
-
-                                    if flashbackNameError != nil {
-                                        Text(flashbackNameError ?? "")
-                                            .foregroundColor(Stylesheet.Colors.error)
-                                            .font(Stylesheet.Fonts.formError)
-                                    }
-                                }
-                                
-                                Section(header: Text("Description")) {
-                                    TextEditor(text: $flashbackDescription)
-                                        .frame(height: 150)
-                                        .font(Stylesheet.Fonts.body)
-                                        .border(flashbackDescriptionError != nil ? Stylesheet.Colors.error : Color.clear)
-                                    if flashbackDescriptionError != nil {
-                                        Text(flashbackDescriptionError ?? "")
-                                            .foregroundColor(Stylesheet.Colors.error)
-                                            .font(Stylesheet.Fonts.formError)
-                                    }
-                                }
-                                
-                            }
-                            FormButton(title: "Create", action: {
-                                processForm()
-                            })
-                            .padding()
-                            Spacer()
-                        }
-                        Spacer()
+                    PageWrapperView(
+                        title: "Create Flashback",
+                        breadcrumbs: [
+                            Breadcrumb(title: "Flashbacks") { route = .flashbacks }
+                        ]
+                    ) {
+                        FormBuilder(
+                            fields: [
+                                Field(
+                                    type: .textField,
+                                    title: "Name",
+                                    binding: $flashbackName,
+                                    errorBinding: $flashbackNameError,
+                                    validationRules: [
+                                        Validation.isRequired,
+                                        { try Validation.stringMin($0, min: 1, errorVar: &$1) },
+                                        { try Validation.stringMax($0, max: 100, errorVar: &$1) }
+                                    ]
+                                ),
+                                Field(
+                                    type: .textEditor,
+                                    title: "Description",
+                                    binding: $flashbackDescription,
+                                    errorBinding: $flashbackDescriptionError,
+                                    validationRules: [
+                                        Validation.isRequired,
+                                        { try Validation.stringMax($0, max: 1000, errorVar: &$1) }
+                                    ]
+                                )
+                            ],
+                            onSubmit: { processForm() }
+                        )
                     }
-                    Spacer()
-
-                    
                 }
                 
             }

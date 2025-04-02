@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8F6A29142D9DA6E200590753 /* Secrets.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 8F6A29132D9DA6DC00590753 /* Secrets.xcconfig */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		8F7E27002D11061F008EC201 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8F6A29132D9DA6DC00590753 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 		8F7E26EE2D11061C008EC201 /* Backstory.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Backstory.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F7E26FF2D11061F008EC201 /* BackstoryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackstoryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F7E27092D11061F008EC201 /* BackstoryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackstoryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,6 +103,7 @@
 				8F7E27022D11061F008EC201 /* BackstoryTests */,
 				8F7E270C2D11061F008EC201 /* BackstoryUITests */,
 				8F7E26EF2D11061C008EC201 /* Products */,
+				8F6A29132D9DA6DC00590753 /* Secrets.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -232,6 +238,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F6A29142D9DA6E200590753 /* Secrets.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,6 +412,7 @@
 		};
 		8F7E27142D11061F008EC201 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8F6A29132D9DA6DC00590753 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -416,6 +424,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Backstory/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow us to use your location to look up safety services in your area.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need to access your microphone to continue.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow us recognuze your speech for live feedback and support.";
@@ -446,6 +456,7 @@
 		};
 		8F7E27152D11061F008EC201 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8F6A29132D9DA6DC00590753 /* Secrets.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -457,6 +468,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Backstory/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow us to use your location to look up safety services in your area.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need to access your microphone to continue.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Allow us recognuze your speech for live feedback and support.";
